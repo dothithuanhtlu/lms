@@ -19,8 +19,8 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
-import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
+// import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthenticationEntryPoint;
+// import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
@@ -70,6 +70,7 @@ public class SercurityConfiguration {
         };
     }
 
+
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
@@ -92,8 +93,10 @@ public class SercurityConfiguration {
                                 // tất cả các url: /, /login không cần login đều được cho phép truy cập
                                 .requestMatchers("/", "/login").permitAll()
                                 // còn lại đều phải login mới được truy cập
-                                .anyRequest().authenticated())
+                                // .anyRequest().authenticated())
+                                .anyRequest().permitAll())
                 .formLogin(f -> f.disable())
+                .cors(Customizer.withDefaults())
                 // sử dụng BearerTokenAuthenticationFilter (filter sẽ tự động extract - lấy
                 // token từ header của request gửi lên server)
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())

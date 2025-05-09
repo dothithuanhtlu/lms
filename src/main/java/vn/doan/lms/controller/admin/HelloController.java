@@ -1,4 +1,4 @@
-package vn.doan.lms.controller;
+package vn.doan.lms.controller.admin;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;

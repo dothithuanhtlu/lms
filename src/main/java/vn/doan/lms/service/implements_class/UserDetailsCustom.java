@@ -1,4 +1,4 @@
-package vn.doan.lms.service;
+package vn.doan.lms.service.implements_class;
 
 import java.util.Collections;
 
@@ -20,12 +20,12 @@ public class UserDetailsCustom implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = this.userService.getUserByIdUser(username);
+        User user = this.userService.getUserByUserCode(username);
         if (user == null) {
             throw new UsernameNotFoundException("Bad credentials");
         }
         return new org.springframework.security.core.userdetails.User(
-                user.getIdUser(),
+                user.getUserCode(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
