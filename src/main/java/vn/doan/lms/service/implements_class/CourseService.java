@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Course;
+import vn.doan.lms.domain.Enrollment;
 import vn.doan.lms.domain.Semester;
 import vn.doan.lms.domain.dto.CourseDTO;
+import vn.doan.lms.domain.dto.CourseDetailDTO;
 import vn.doan.lms.repository.CourseRepository;
+import vn.doan.lms.repository.EnrollmentRepository;
 import vn.doan.lms.repository.SubjectRepository;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
@@ -19,6 +22,7 @@ import vn.doan.lms.util.error.ResourceNotFoundException;
 public class CourseService {
     private final CourseRepository courseRepository;
     private final SubjectRepository subjectRepository;
+    private final EnrollmentRepository enrollmentRepository;
 
     public List<CourseDTO> getCoursesBySubjectId(long subjectId) {
         if (!courseRepository.existsById(subjectId)) {
@@ -41,5 +45,14 @@ public class CourseService {
                 .map(Semester::getId)
                 .distinct()
                 .toList();
+    }
+
+    public CourseDetailDTO getCourseDetails(Long courseId) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+
+        List<Enrollment> enrollments = enrollmentRepository.findByCourseIdWithStudent(courseId);
+
+        return new CourseDetailDTO(course, enrollments);
     }
 }

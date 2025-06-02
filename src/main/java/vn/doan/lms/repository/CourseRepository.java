@@ -10,4 +10,6 @@ import vn.doan.lms.domain.Course;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findAllBySubjectId(long subjectId);
+
+    Course findOneById(long courseId);
 }
