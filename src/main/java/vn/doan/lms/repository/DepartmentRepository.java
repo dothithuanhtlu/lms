@@ -7,7 +7,7 @@ import vn.doan.lms.domain.Department;
 
 @Repository
 public interface DepartmentRepository extends JpaRepository<Department, Long> {
-    boolean existsById(Long departmentId);
+    boolean existsById(long departmentId);
 
     boolean existsByDepartmentCode(String departmentCode);
 

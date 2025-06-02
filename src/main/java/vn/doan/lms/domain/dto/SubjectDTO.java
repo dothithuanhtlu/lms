@@ -27,6 +27,7 @@ public class SubjectDTO {
     @NotBlank(message = "SubjectType mustn't be empty")
     @Pattern(regexp = "GENERAL|SPECIALIZED", message = "SubjectType must be GENERAL or SPECIALIZED")
     private String type;
+    private String preferredSemesterPattern;
 
     public SubjectDTO(Subject subject) {
         this.id = subject.getId();
@@ -34,6 +35,6 @@ public class SubjectDTO {
         this.subjectName = subject.getSubjectName();
         this.credits = subject.getCredits();
         this.type = subject.getType();
-
+        this.preferredSemesterPattern = subject.getPreferredSemesterPattern();
     }
 }

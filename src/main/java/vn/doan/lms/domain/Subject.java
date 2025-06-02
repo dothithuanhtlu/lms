@@ -47,6 +47,8 @@ public class Subject {
     @NotBlank(message = "Credits mustn't be empty")
     private Integer credits;
 
+    private String preferredSemesterPattern;
+
     @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();
 

@@ -30,6 +30,7 @@ import lombok.AccessLevel;
 @AllArgsConstructor
 @Builder
 public class Course {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Setter(AccessLevel.NONE)
@@ -41,23 +42,25 @@ public class Course {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id", nullable = false)
-    @NotBlank(message = "subject mustn't be empty")
+    @NotNull(message = "Subject mustn't be null")
     private Subject subject;
-
-    @Column(nullable = false)
-    @NotBlank(message = "semester mustn't be empty")
-    private String semester; // VD: "2024-1"
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "teacher_id", nullable = false)
-    @NotBlank(message = "teacher mustn't be empty")
-    private User teacher; // Quan hệ 1-N: 1 course chỉ có 1 teacher
+    @NotNull(message = "Teacher mustn't be null")
+    private User teacher;
 
     @NotNull(message = "MaxStudents mustn't be empty")
     private Integer maxStudents;
+
     @Column(columnDefinition = "INT DEFAULT 0")
-    private Integer currentStudents;
+    private Integer currentStudents = 0;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
     private List<Enrollment> enrollments = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "semester_id", nullable = false)
+    @NotNull(message = "Semester mustn't be null")
+    private Semester semester;
 }

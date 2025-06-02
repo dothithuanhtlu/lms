@@ -1,6 +1,5 @@
 package vn.doan.lms.service.implements_class;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,12 +7,8 @@ import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Department;
-import vn.doan.lms.domain.Major;
-import vn.doan.lms.domain.Subject;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.DepartmentDTO;
-import vn.doan.lms.domain.dto.MajorDTO;
-import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.repository.DepartmentRepository;
 import vn.doan.lms.repository.MajorRepository;
@@ -67,27 +62,6 @@ public class DepartmentService {
         return teachers.stream()
                 .map(TeacherDTO::new)
                 .collect(Collectors.toList());
-    }
-
-    public List<MajorDTO> getMajorDTOsByDepartmentId(long departmentId) {
-        if (!departmentRepository.existsById(departmentId)) {
-            throw new ResourceNotFoundException("Department not found with id: " + departmentId);
-        }
-        List<Major> majors = this.majorRepository.findAllByDepartmentId(departmentId);
-        return majors.stream()
-                .map(MajorDTO::new)
-                .collect(Collectors.toList());
-    }
-
-    public List<SubjectDTO> getSubjectsByMajorId(long majorId) {
-        if (!this.majorRepository.existsById(majorId)) {
-            throw new ResourceNotFoundException("Major not found with id: " + majorId);
-        }
-        List<Subject> subjects = this.subjectRepository.findAllByMajorId(majorId);
-        return subjects.isEmpty() ? Collections.emptyList()
-                : subjects.stream()
-                        .map(SubjectDTO::new)
-                        .collect(Collectors.toList());
     }
 
     public String getDepartmentNameByDepartmentId(long departmentId) {

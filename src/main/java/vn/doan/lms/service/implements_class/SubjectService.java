@@ -29,4 +29,11 @@ public class SubjectService {
                         .map(SubjectDTO::new)
                         .collect(Collectors.toList());
     }
+
+    public String getSubjectNameBySubjectId(long subjectId) {
+        if (!this.subjectRepository.existsById(subjectId)) {
+            throw new ResourceNotFoundException("Subject not found with id: " + subjectId);
+        }
+        return this.subjectRepository.findById(subjectId).get().getSubjectName();
+    }
 }

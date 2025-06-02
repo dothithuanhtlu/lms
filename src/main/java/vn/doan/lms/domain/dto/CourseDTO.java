@@ -21,7 +21,9 @@ public class CourseDTO {
     private String courseCode; // VD: "CS101.2024.1.01"
 
     @NotBlank(message = "semester mustn't be empty")
-    private String semester; // VD: "2024-1"
+    private String semesterCode; // VD: "2024-1"
+
+    private String active;
 
     @NotBlank(message = "teacherName mustn't be empty")
     private String teacherName; // Quan hệ 1-N: 1 course chỉ có 1 teacher
@@ -37,7 +39,8 @@ public class CourseDTO {
     public CourseDTO(Course course) {
         this.id = course.getId();
         this.courseCode = course.getCourseCode();
-        this.semester = course.getSemester();
+        this.semesterCode = course.getSemester().getId();
+        this.active = course.getSemester().isActive() ? "true" : "false";
         this.teacherName = course.getTeacher().getFullName();
         this.teacherCode = course.getTeacher().getUserCode();
         this.maxStudents = course.getMaxStudents();
