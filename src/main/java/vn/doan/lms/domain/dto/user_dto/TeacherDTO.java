@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -13,14 +15,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import vn.doan.lms.domain.User;
+import vn.doan.lms.util.SecurityUtil;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentDTO {
-
+public class TeacherDTO {
     @NotBlank(message = "UserCode mustn't be empty")
     private String userCode;
 
@@ -49,9 +52,32 @@ public class StudentDTO {
 
     @NotBlank(message = "ClassRoom mustn't be empty")
     private String className;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")
-    private Instant createdAt;
-    private Instant updatedAt;
-    private String createdBy;
-    private String updatedBy;
+    private boolean isHead;
+    private boolean isDeputy;
+    private boolean isAdvisor;
+
+    public TeacherDTO(User user) {
+        this.userCode = user.getUserCode();
+        this.email = user.getEmail();
+        this.fullName = user.getFullName();
+        this.address = user.getAddress();
+        this.gender = user.getGender();
+        this.phone = user.getPhone();
+        this.dateOfBirth = user.getDateOfBirth();
+        this.roleName = user.getRole().getNameRole();
+        // Xử lý ClassRoom (có thể null)
+        this.className = user.getClassRoom() != null
+                ? user.getClassRoom().getClassName()
+                : "Chưa phân lớp";
+
+        // Kiểm tra trưởng/phó khoa
+        this.isHead = user.isDepartmentHead();
+        this.isDeputy = user.isDepartmentDeputy();
+
+        // Kiểm tra giáo viên chủ nhiệm
+        this.isAdvisor = user.getClassRoom() != null
+                && user.getClassRoom().getAdvisor() != null
+                && user.getClassRoom().getAdvisor().equals(user);
+    }
+
 }

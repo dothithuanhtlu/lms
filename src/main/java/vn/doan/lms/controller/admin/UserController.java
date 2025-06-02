@@ -3,6 +3,7 @@ package vn.doan.lms.controller.admin;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.service.implements_class.UserService;
@@ -19,25 +20,21 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
+@AllArgsConstructor
 public class UserController {
     private static final String ROLE_STUDENT = "Student";
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
 
-    public UserController(UserService userService, PasswordEncoder passwordEncoder) {
-        this.userService = userService;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    @GetMapping("/admins/students")
+    @GetMapping("/admin/students")
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
-        return ResponseEntity.ok(this.userService.getAllStudents());
+        List<StudentDTO> students = this.userService.getAllStudents();
+        return ResponseEntity.ok(students);
     }
 
-    @PostMapping("/admins/students")
+    @PostMapping("/admin/students")
     public ResponseEntity<StudentDTOUpdate> createStudent(
             @Valid @RequestBody StudentDTOUpdate studentDTOUpdate)
             throws UserCodeValidationException, EmailValidationException {
@@ -50,19 +47,19 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newStudent);
     }
 
-    @DeleteMapping("/admins/students/{userCode}")
+    @DeleteMapping("/admin/students/{userCode}")
     public ResponseEntity<Void> deleteStudent(@PathVariable("userCode") String userCode)
             throws UserCodeValidationException {
         this.userService.deleteStudent(userCode);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/admins/students/{userCode}")
-    public ResponseEntity<StudentDTOUpdate> getStudentByUserCode(String userCode) throws UserCodeValidationException {
+    @GetMapping("/admin/students/{userCode}")
+    public ResponseEntity<StudentDTOUpdate> getStudentByUserCode(@PathVariable("userCode") String userCode)
+            throws UserCodeValidationException {
         StudentDTOUpdate studentDTOUpdate = this.userService.getStudentByUserCode(userCode);
         return ResponseEntity.ok(studentDTOUpdate);
     }
-
 }
 // @GetMapping("/users")
 // public ResponseEntity<List<UserDTO>> getAllUsers() {

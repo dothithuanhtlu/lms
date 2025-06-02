@@ -1,8 +1,7 @@
 package vn.doan.lms.domain;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,9 +10,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,37 +20,34 @@ import lombok.Setter;
 import lombok.AccessLevel;
 
 @Entity
-@Table(name = "class_rooms")
+@Table(name = "enrollments")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClassRoom {
+public class Enrollment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Setter(AccessLevel.NONE)
     private long id;
 
-    @Column(unique = true, nullable = false)
-    @NotBlank(message = "ClassName mustn't be empty")
-    private String className;
-
-    private String description;
-    @NotBlank(message = "MaxStudents mustn't be empty")
-    private Integer maxStudents;
-    @Column(columnDefinition = "INT DEFAULT 0")
-    private Integer currentStudents;
-
-    @OneToMany(mappedBy = "classRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<User> users;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "student_id", nullable = false)
+    private User student;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "advisor_id")
-    private User advisor;
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "major_id")
-    private Major major;
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime enrolledAt = LocalDateTime.now();
 
+    private Float midtermScore;
+    private Float finalScore;
+    private Float attendanceRate;
+
+    @Column(nullable = false)
+    @Pattern(regexp = "REGISTERED|COMPLETED|DROPPED|FAILED", message = "Status mustn't be empty")
+    private String status;
 }

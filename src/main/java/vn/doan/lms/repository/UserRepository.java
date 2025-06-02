@@ -13,6 +13,8 @@ import vn.doan.lms.domain.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+        List<User> findByDepartmentIdAndRole_NameRole(Long departmentId, String roleName);
+
         User findOneByUserCode(String userCode);
 
         void deleteUserByUserCode(String userCode);

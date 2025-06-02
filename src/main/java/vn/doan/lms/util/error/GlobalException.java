@@ -25,7 +25,27 @@ import vn.doan.lms.domain.CustomResponse;
 public class GlobalException {
     private final Logger logger = LoggerFactory.getLogger(GlobalException.class);
 
-    // xử lý exception của idUser
+    /**
+     * Xử lý các ngoại lệ liên quan đến validation custom như:
+     * - {@link UserCodeValidationException}
+     * - {@link EmailValidationException}
+     * - {@link ClassNameValidationException}
+     *
+     * Các exception này thường được ném ra khi dữ liệu đầu vào không thỏa mãn điều
+     * kiện nghiệp vụ
+     * cụ thể (ví dụ: mã người dùng sai định dạng, email không hợp lệ, tên lớp không
+     * hợp lệ).
+     *
+     * Khi một trong các exception trên được ném ra, phương thức này sẽ:
+     * - Ghi log lỗi để phục vụ kiểm tra sau này
+     * - Trả về phản hồi định dạng chuẩn {@link CustomResponse} cho client
+     * - Thiết lập mã lỗi HTTP 404 (Not Found), báo rằng dữ liệu yêu cầu không hợp
+     * lệ hoặc không tồn tại
+     *
+     * @param e Exception được ném ra từ controller hoặc service
+     * @return ResponseEntity chứa thông tin lỗi định dạng theo chuẩn CustomResponse
+     *         và HTTP status 404
+     */
     @ExceptionHandler(value = { UserCodeValidationException.class, EmailValidationException.class,
             ClassNameValidationException.class })
     public ResponseEntity<CustomResponse<Object>> handleIdException(Exception e) {
@@ -34,6 +54,24 @@ public class GlobalException {
         res.setStatusCode(HttpStatus.NOT_FOUND.value());
         res.setError(e.getMessage());
         res.setMessage("Data invalid!");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
+    }
+    @ExceptionHandler(BadRequestExceptionCustom.class)
+    public ResponseEntity<CustomResponse<Object>> handleBadRequest(BadRequestExceptionCustom e) {
+        logger.error("Data invalid(bad request): {}", e.getMessage(), e);
+        CustomResponse<Object> res = new CustomResponse<>();
+        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setError("Data invalid!");
+        res.setMessage(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<CustomResponse<Object>> handleResourceNotFound(ResourceNotFoundException e) {
+        logger.error("Data invalid(not found): {}", e.getMessage(), e);
+        CustomResponse<Object> res = new CustomResponse<>();
+        res.setStatusCode(HttpStatus.NOT_FOUND.value());
+        res.setError("Resource Not Found");
+        res.setMessage(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
 

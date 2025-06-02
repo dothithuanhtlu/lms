@@ -22,7 +22,9 @@ import vn.doan.lms.repository.ClassRoomRepository;
 import vn.doan.lms.repository.RoleRepository;
 import vn.doan.lms.repository.UserRepository;
 import vn.doan.lms.util.SecurityUtil;
+import vn.doan.lms.util.error.BadRequestExceptionCustom;
 import vn.doan.lms.util.error.EmailValidationException;
+import vn.doan.lms.util.error.ResourceNotFoundException;
 import vn.doan.lms.util.error.StoredProcedureFailedException;
 import vn.doan.lms.util.error.UserCodeValidationException;
 
@@ -31,13 +33,16 @@ import vn.doan.lms.util.error.UserCodeValidationException;
 @AllArgsConstructor
 @Service
 public class UserService {
-    private static final String ROLE_STUDENT = "Student";
+    private static final String ROLE_STUDENT = "STUDENT";
     private final UserRepository userRepository;
     private final ClassRoomRepository classRoomRepository;
     private EntityManager entityManager;
     private final RoleRepository roleRepository;
 
     public User getUserByUserCode(String userCode) {
+        if(!isExistUserCode(userCode)) {
+            throw new ResourceNotFoundException("User not found with user code");
+        }
         return this.userRepository.findOneByUserCode(userCode);
     }
 
@@ -76,16 +81,15 @@ public class UserService {
         return this.userRepository.existsByEmail(email);
     }
 
-    public StudentDTOUpdate createStudent(StudentDTOUpdate studentDTOUpdate)
-            throws UserCodeValidationException, EmailValidationException {
+    public StudentDTOUpdate createStudent(StudentDTOUpdate studentDTOUpdate) {
         if (studentDTOUpdate == null) {
             return null;
         }
         if (isExistUserCode(studentDTOUpdate.getUserCode())) {
-            throw new UserCodeValidationException("User code already exists");
+            throw new BadRequestExceptionCustom("User code already exists");
         }
         if (isExistEmail(studentDTOUpdate.getEmail())) {
-            throw new EmailValidationException("Email already exists");
+            throw new BadRequestExceptionCustom("Email already exists");
         }
 
         Role role = this.roleRepository.findOneByNameRole(ROLE_STUDENT);
@@ -131,9 +135,9 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteStudent(String userCode) throws UserCodeValidationException {
+    public void deleteStudent(String userCode) throws ResourceNotFoundException {
         if (!isExistUserCode(userCode)) {
-            throw new UserCodeValidationException("User code is not exists");
+            throw new ResourceNotFoundException("User code is not exists");
         }
         this.userRepository.deleteUserByUserCode(userCode);
     }
@@ -156,9 +160,9 @@ public class UserService {
                 .build();
     }
 
-    public StudentDTOUpdate getStudentByUserCode(String userCode) throws UserCodeValidationException {
+    public StudentDTOUpdate getStudentByUserCode(String userCode) {
         if (!isExistUserCode(userCode)) {
-            throw new UserCodeValidationException("User code is not exists");
+            throw new ResourceNotFoundException("User code is not exists");
         }
         return convertToStudentDTOUpdate(this.userRepository.findOneByUserCode(userCode));
 
