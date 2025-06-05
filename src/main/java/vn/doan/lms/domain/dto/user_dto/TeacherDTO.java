@@ -16,7 +16,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.doan.lms.domain.User;
-import vn.doan.lms.util.SecurityUtil;
 
 @Getter
 @Setter

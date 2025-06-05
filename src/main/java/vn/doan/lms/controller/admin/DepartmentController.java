@@ -11,10 +11,12 @@ import vn.doan.lms.domain.dto.DepartmentDTO;
 import vn.doan.lms.domain.dto.MajorDTO;
 import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
+import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
 import vn.doan.lms.service.implements_class.CourseService;
 import vn.doan.lms.service.implements_class.DepartmentService;
 import vn.doan.lms.service.implements_class.MajorService;
 import vn.doan.lms.service.implements_class.SubjectService;
+import vn.doan.lms.service.implements_class.UserService;
 
 import java.util.List;
 
@@ -32,17 +34,12 @@ public class DepartmentController {
     private final MajorService majorService;
     private final CourseService courseService;
     private final SubjectService subjectService;
+    private final UserService userService;
 
     // Lay toan bo department
     @GetMapping("/admin/departments")
     public ResponseEntity<List<DepartmentDTO>> getAllDepartment() {
         return ResponseEntity.ok(this.departmentService.getAllDepartments());
-    }
-
-    // Tao moi department
-    @PostMapping("/admin/departments")
-    public ResponseEntity<Department> createDepartment(@Valid @RequestBody DepartmentDTO depart) {
-        return ResponseEntity.ok(this.departmentService.createDepartment(depart));
     }
 
     // Lay danh sach giao vien theo id khoa
@@ -99,4 +96,15 @@ public class DepartmentController {
         return ResponseEntity.ok(this.courseService.getCourseDetails(courseId));
     }
 
+    // lay giao vien teacherselectdto theo id khoa
+    @GetMapping("/admin/department/teachers_select")
+    public ResponseEntity<List<TeacherSelectDTO>> getTeachersForSelect() {
+        return ResponseEntity.ok(userService.getTeachersForSelect());
+    }
+
+    // Tao moi department
+    @PostMapping("/admin/departments")
+    public ResponseEntity<Department> createDepartment(@Valid @RequestBody DepartmentDTO depart) {
+        return ResponseEntity.ok(this.departmentService.createDepartment(depart));
+    }
 }

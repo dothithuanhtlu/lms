@@ -18,6 +18,7 @@ import vn.doan.lms.domain.Role;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
+import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
 import vn.doan.lms.repository.RoleRepository;
 import vn.doan.lms.repository.UserRepository;
@@ -33,14 +34,26 @@ import vn.doan.lms.util.error.UserCodeValidationException;
 @AllArgsConstructor
 @Service
 public class UserService {
-    private static final String ROLE_STUDENT = "STUDENT";
+    private static final String ROLE_TEACHER = "Teacher";
+    private static final String ROLE_STUDENT = "student";
     private final UserRepository userRepository;
     private final ClassRoomRepository classRoomRepository;
     private EntityManager entityManager;
     private final RoleRepository roleRepository;
 
+    public List<TeacherSelectDTO> getTeachersForSelect() {
+        List<User> users = this.userRepository.findAll();
+        if (users == null || users.isEmpty()) {
+            throw new ResourceNotFoundException("No teachers found for the given department ID");
+        }
+        return users.stream()
+                .filter(user -> user.getRole() != null && ROLE_TEACHER.equals(user.getRole().getNameRole()))
+                .map(TeacherSelectDTO::new)
+                .toList();
+    }
+
     public User getUserByUserCode(String userCode) {
-        if(!isExistUserCode(userCode)) {
+        if (!isExistUserCode(userCode)) {
             throw new ResourceNotFoundException("User not found with user code");
         }
         return this.userRepository.findOneByUserCode(userCode);

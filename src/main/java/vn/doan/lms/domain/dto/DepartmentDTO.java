@@ -22,26 +22,34 @@ public class DepartmentDTO {
     @NotBlank(message = "NameDepartment mustn't be empty")
     private String nameDepartment;
 
-    private Long headOfDepartmentId; // ID trưởng khoa
-    private Long deputyHeadOfDepartmentId; // ID phó khoa
+    private Long headOfDepartmentId;
+    private String headOfDepartmentName;
+    private String headOfDepartmentCode;
+
+    private Long deputyHeadOfDepartmentId;
+    private String deputyHeadOfDepartmentName;
+    private String deputyHeadOfDepartmentCode;
 
     @NotBlank(message = "Description mustn't be empty")
     private String description;
 
-    // Constructor chuyển từ Entity sang DTO
     public DepartmentDTO(Department department) {
         this.id = department.getId();
         this.departmentCode = department.getDepartmentCode();
         this.nameDepartment = department.getNameDepartment();
         this.description = department.getDescription();
 
-        this.headOfDepartmentId = department.getHeadOfDepartment() != null
-                ? department.getHeadOfDepartment().getId()
-                : null;
+        if (department.getHeadOfDepartment() != null) {
+            this.headOfDepartmentId = department.getHeadOfDepartment().getId();
+            this.headOfDepartmentName = department.getHeadOfDepartment().getFullName();
+            this.headOfDepartmentCode = department.getHeadOfDepartment().getUserCode();
+        }
 
-        this.deputyHeadOfDepartmentId = department.getDeputyHeadOfDepartment() != null
-                ? department.getDeputyHeadOfDepartment().getId()
-                : null;
+        if (department.getDeputyHeadOfDepartment() != null) {
+            this.deputyHeadOfDepartmentId = department.getDeputyHeadOfDepartment().getId();
+            this.deputyHeadOfDepartmentName = department.getDeputyHeadOfDepartment().getFullName();
+            this.deputyHeadOfDepartmentCode = department.getDeputyHeadOfDepartment().getUserCode();
+        }
     }
 
     public Department toDepartment() {
