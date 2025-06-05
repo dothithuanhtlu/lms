@@ -72,6 +72,12 @@ public class DepartmentController {
         return ResponseEntity.ok(this.departmentService.getDepartmentNameByDepartmentId(departmentId));
     }
 
+    // lấy toàn bộ tên khoa
+    @GetMapping("/admin/departments/names")
+    public ResponseEntity<List<String>> getAllDepartmentNames() {
+        return ResponseEntity.ok(this.departmentService.getAllDepartmentNames());
+    }
+
     // Lay danh sach lop hoc phan theo id mon hoc
     @GetMapping("/admin/department/major/subjects/{subjectId}/courses")
     public ResponseEntity<List<CourseDTO>> getCoursesBySubjectId(@PathVariable("subjectId") long subjectId) {

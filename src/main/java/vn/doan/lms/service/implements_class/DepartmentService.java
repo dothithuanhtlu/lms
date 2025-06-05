@@ -70,4 +70,10 @@ public class DepartmentService {
         }
         return this.departmentRepository.findOneById(departmentId).getNameDepartment();
     }
+
+    public List<String> getAllDepartmentNames() {
+        return this.departmentRepository.findAll().stream()
+                .map(Department::getNameDepartment)
+                .collect(Collectors.toList());
+    }
 }
