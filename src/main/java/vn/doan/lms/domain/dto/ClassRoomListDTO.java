@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClassRoomListDTO {
+    private long id;
     private String className;
     private String description;
     private Integer maxStudents;

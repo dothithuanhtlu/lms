@@ -23,7 +23,7 @@ import vn.doan.lms.domain.User;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class TeacherDTO {
+public class TeacherDetailDTO {
     @NotBlank(message = "UserCode mustn't be empty")
     private String userCode;
 
@@ -49,8 +49,11 @@ public class TeacherDTO {
 
     private String departmentName;
     private String departmentCode;
+    private boolean isHead;
+    private boolean isDeputy;
+    private boolean isAdvisor;
 
-    public TeacherDTO(User user) {
+    public TeacherDetailDTO(User user) {
         this.userCode = user.getUserCode();
         this.email = user.getEmail();
         this.fullName = user.getFullName();
@@ -60,6 +63,14 @@ public class TeacherDTO {
         this.dateOfBirth = user.getDateOfBirth();
         departmentName = user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null;
         departmentCode = user.getDepartment() != null ? user.getDepartment().getDepartmentCode() : null;
+        // Kiểm tra trưởng/phó khoa
+        this.isHead = user.isDepartmentHead();
+        this.isDeputy = user.isDepartmentDeputy();
+
+        // Kiểm tra giáo viên chủ nhiệm
+        this.isAdvisor = user.getClassRoom() != null
+                && user.getClassRoom().getAdvisor() != null
+                && user.getClassRoom().getAdvisor().equals(user);
     }
 
 }

@@ -38,6 +38,7 @@ public class ClassRoomService {
         Major major = classRoom.getMajor();
 
         return ClassRoomListDTO.builder()
+                .id(classRoom.getId())
                 .className(classRoom.getClassName())
                 .description(classRoom.getDescription())
                 .maxStudents(classRoom.getMaxStudents())

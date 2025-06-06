@@ -39,4 +39,19 @@ public class MajorService {
                 .map(MajorDTO::new)
                 .collect(Collectors.toList());
     }
+
+    public List<MajorDTO> getAllMajors() {
+        return majorRepository.findAll().stream()
+                .map(MajorDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<MajorDTO> getMajorsByDepartmentName(String departmentName) {
+        if (!departmentRepository.existsByNameDepartment(departmentName)) {
+            throw new ResourceNotFoundException("Department not found with name: " + departmentName);
+        }
+        return majorRepository.findAllByDepartmentNameDepartment(departmentName).stream()
+                .map(MajorDTO::new)
+                .collect(Collectors.toList());
+    }
 }

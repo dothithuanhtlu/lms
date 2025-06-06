@@ -18,6 +18,7 @@ import vn.doan.lms.domain.Role;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
+import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
 import vn.doan.lms.repository.RoleRepository;
@@ -49,6 +50,27 @@ public class UserService {
         return users.stream()
                 .filter(user -> user.getRole() != null && ROLE_TEACHER.equals(user.getRole().getNameRole()))
                 .map(TeacherSelectDTO::new)
+                .toList();
+    }
+
+    public List<TeacherDTO> getAllTeachers() {
+        Role role = this.roleRepository.findOneByNameRole(ROLE_TEACHER);
+        if (role == null) {
+            throw new ResourceNotFoundException("Role not found: " + ROLE_TEACHER);
+        }
+        List<User> list = this.userRepository.findAllByRoleId(role.getId());
+        return list.stream()
+                .map(user -> TeacherDTO.builder()
+                        .userCode(user.getUserCode())
+                        .fullName(user.getFullName())
+                        .email(user.getEmail())
+                        .dateOfBirth(user.getDateOfBirth())
+                        .gender(user.getGender())
+                        .address(user.getAddress())
+                        .phone(user.getPhone())
+                        .departmentCode(user.getDepartment() != null ? user.getDepartment().getDepartmentCode() : null)
+                        .departmentName(user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null)
+                        .build())
                 .toList();
     }
 
