@@ -27,20 +27,14 @@ public class UserDTO {
     @NotBlank(message = "FullName mustn't be empty")
     private String fullName;
 
-    @NotBlank(message = "Address mustn't be empty")
-    private String address;
-
     @NotBlank(message = "Gender mustn't be empty")
     @Pattern(regexp = "MALE|FEMALE", message = "Gender must be either MALE or FEMALE")
     private String gender;
 
-    @NotBlank(message = "Phone mustn't be empty")
-    private String phone;
-
-    @NotBlank(message = "DateOfBirth mustn't be empty")
-    private LocalDate dateOfBirth;
-
     @NotBlank(message = "Role mustn't be empty")
     private String roleName;
+
+    private String departmentName;
+    private String majorName;
 
 }

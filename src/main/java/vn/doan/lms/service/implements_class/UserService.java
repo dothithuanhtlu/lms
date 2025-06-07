@@ -3,7 +3,11 @@ package vn.doan.lms.service.implements_class;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +20,14 @@ import lombok.Setter;
 import vn.doan.lms.domain.ClassRoom;
 import vn.doan.lms.domain.Role;
 import vn.doan.lms.domain.User;
+import vn.doan.lms.domain.dto.Meta;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
+import vn.doan.lms.domain.dto.user_dto.UserDTO;
+import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
 import vn.doan.lms.repository.RoleRepository;
 import vn.doan.lms.repository.UserRepository;
@@ -37,6 +45,7 @@ import vn.doan.lms.util.error.UserCodeValidationException;
 public class UserService {
     private static final String ROLE_TEACHER = "Teacher";
     private static final String ROLE_STUDENT = "student";
+    private static final String ROLE_ADMIN = "Admin";
     private final UserRepository userRepository;
     private final ClassRoomRepository classRoomRepository;
     private EntityManager entityManager;
@@ -51,6 +60,74 @@ public class UserService {
                 .filter(user -> user.getRole() != null && ROLE_TEACHER.equals(user.getRole().getNameRole()))
                 .map(TeacherSelectDTO::new)
                 .toList();
+    }
+
+    public UserStatisticsDTO getUserStatistics() {
+        long totalUsers = userRepository.count();
+        long totalTeachers = userRepository.countByRole_NameRole(ROLE_TEACHER);
+        long totalStudents = userRepository.countByRole_NameRole(ROLE_STUDENT);
+        long totalAdmins = userRepository.countByRole_NameRole(ROLE_ADMIN); // Adjust if you have an admin role
+
+        return UserStatisticsDTO.builder()
+                .totalUsers(totalUsers)
+                .totalTeachers(totalTeachers)
+                .totalStudents(totalStudents)
+                .totalAdmins(totalAdmins) // Assuming no admin role is counted here, adjust if needed
+                .build();
+    }
+
+    public ResultPaginationDTO getAllUsers(Optional<String> currentOptional, Optional<String> pageSizeOptional) {
+
+        // Kiểm tra xem cả 2 parameter có tồn tại không
+        if (!currentOptional.isPresent() || !pageSizeOptional.isPresent()) {
+            throw new BadRequestExceptionCustom("Both current and pageSize must be provided");
+        }
+
+        try {
+            // Ép kiểu từ String sang int
+            int current = Integer.parseInt(currentOptional.get());
+            int pageSize = Integer.parseInt(pageSizeOptional.get());
+
+            // Kiểm tra current và pageSize phải hợp lệ
+            if (current <= 0 || pageSize <= 0) {
+                throw new BadRequestExceptionCustom("Page and pageSize must be positive integers");
+            }
+
+            // Tạo đối tượng phân trang (Pageable)
+            Pageable pageable = PageRequest.of(current - 1, pageSize);
+
+            // Gọi repository để lấy dữ liệu
+            Page<User> pageUsers = userRepository.findAll(pageable);
+
+            // Map dữ liệu sang DTO
+            List<UserDTO> userDTOList = pageUsers.getContent().stream()
+                    .map(user -> UserDTO.builder()
+                            .userCode(user.getUserCode())
+                            .email(user.getEmail())
+                            .fullName(user.getFullName())
+                            .gender(user.getGender())
+                            .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
+                            .departmentName(
+                                    user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null)
+                            .build())
+                    .toList();
+
+            // Tạo metadata phân trang
+            Meta meta = new Meta();
+            meta.setPage(pageUsers.getNumber());
+            meta.setPageSize(pageUsers.getSize());
+            meta.setPages(pageUsers.getTotalPages());
+            meta.setTotal(pageUsers.getTotalElements());
+
+            // Trả về ResultPaginationDTO
+            ResultPaginationDTO result = new ResultPaginationDTO();
+            result.setMeta(meta);
+            result.setResult(userDTOList);
+            return result;
+
+        } catch (NumberFormatException e) {
+            throw new BadRequestExceptionCustom("Invalid format for current or pageSize");
+        }
     }
 
     public List<TeacherDTO> getAllTeachers() {
@@ -214,13 +291,6 @@ public class UserService {
     // .roleName(user.getRole().getNameRole())
     // .phone(user.getPhone())
     // .build();
-    // }
-
-    // public List<UserDTO> getAllUsers() {
-    // List<User> users = this.userRepository.findAll();
-    // return users.stream()
-    // .map(this::convertToUserDTO)
-    // .toList();
     // }
 
     // public User saveUser(User user) {

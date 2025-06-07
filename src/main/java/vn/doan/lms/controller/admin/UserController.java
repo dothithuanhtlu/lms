@@ -6,11 +6,14 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
+import vn.doan.lms.domain.dto.user_dto.UserDTO;
+import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.service.implements_class.UserService;
 import vn.doan.lms.util.error.EmailValidationException;
 import vn.doan.lms.util.error.UserCodeValidationException;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @AllArgsConstructor
@@ -60,11 +64,21 @@ public class UserController {
         StudentDTOUpdate studentDTOUpdate = this.userService.getStudentByUserCode(userCode);
         return ResponseEntity.ok(studentDTOUpdate);
     }
+
+    @GetMapping("/admin/users/statistics")
+    public ResponseEntity<UserStatisticsDTO> getUserStatistics() {
+
+        return ResponseEntity.ok(this.userService.getUserStatistics());
+    }
+
+    @GetMapping("/admin/users")
+    public ResponseEntity<Object> getAllUsers(
+            @RequestParam("current") Optional<String> currentOptional,
+            @RequestParam("pageSize") Optional<String> pageSizeOptional) {
+        return ResponseEntity.ok(this.userService.getAllUsers(currentOptional, pageSizeOptional));
+    }
 }
-// @GetMapping("/users")
-// public ResponseEntity<List<UserDTO>> getAllUsers() {
-// return ResponseEntity.ok(this.userService.getAllUsers());
-// }
+
 // @GetMapping("/users/{userCode}")
 // public ResponseEntity<User> getUserById(@PathVariable("userCode") String
 // userCode) {
