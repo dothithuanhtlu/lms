@@ -56,6 +56,7 @@ public class GlobalException {
         res.setMessage("Data invalid!");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(res);
     }
+
     @ExceptionHandler(BadRequestExceptionCustom.class)
     public ResponseEntity<CustomResponse<Object>> handleBadRequest(BadRequestExceptionCustom e) {
         logger.error("Data invalid(bad request): {}", e.getMessage(), e);
@@ -65,6 +66,17 @@ public class GlobalException {
         res.setMessage(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
+
+    @ExceptionHandler(ConflictExceptionCustom.class)
+    public ResponseEntity<CustomResponse<Object>> handleConflictRequest(ConflictExceptionCustom e) {
+        logger.error("Data invalid(conflict request): {}", e.getMessage(), e);
+        CustomResponse<Object> res = new CustomResponse<>();
+        res.setStatusCode(HttpStatus.CONFLICT.value());
+        res.setError("Data invalid!");
+        res.setMessage(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(res);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<CustomResponse<Object>> handleResourceNotFound(ResourceNotFoundException e) {
         logger.error("Data invalid(not found): {}", e.getMessage(), e);

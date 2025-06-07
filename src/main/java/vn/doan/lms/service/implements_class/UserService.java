@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import vn.doan.lms.domain.Role;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.Meta;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
+import vn.doan.lms.domain.dto.user_dto.AdminDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
@@ -33,6 +35,7 @@ import vn.doan.lms.repository.RoleRepository;
 import vn.doan.lms.repository.UserRepository;
 import vn.doan.lms.util.SecurityUtil;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
+import vn.doan.lms.util.error.ConflictExceptionCustom;
 import vn.doan.lms.util.error.EmailValidationException;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 import vn.doan.lms.util.error.StoredProcedureFailedException;
@@ -50,6 +53,7 @@ public class UserService {
     private final ClassRoomRepository classRoomRepository;
     private EntityManager entityManager;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<TeacherSelectDTO> getTeachersForSelect() {
         List<User> users = this.userRepository.findAll();
@@ -88,7 +92,7 @@ public class UserService {
             int current = Integer.parseInt(currentOptional.get());
             int pageSize = Integer.parseInt(pageSizeOptional.get());
 
-            // Kiểm tra current và pageSize phải hợp lệ
+            // Kiểm tra current và pageSize phải hợp lệs
             if (current <= 0 || pageSize <= 0) {
                 throw new BadRequestExceptionCustom("Page and pageSize must be positive integers");
             }
@@ -107,8 +111,6 @@ public class UserService {
                             .fullName(user.getFullName())
                             .gender(user.getGender())
                             .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
-                            .departmentName(
-                                    user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null)
                             .build())
                     .toList();
 
@@ -128,6 +130,23 @@ public class UserService {
         } catch (NumberFormatException e) {
             throw new BadRequestExceptionCustom("Invalid format for current or pageSize");
         }
+    }
+
+    public AdminDTO getAdminByUserCode(String userCode) {
+        if (!isExistUserCode(userCode)) {
+            throw new ResourceNotFoundException("User code is not exists");
+        }
+        User user = this.userRepository.findOneByUserCode(userCode);
+        return AdminDTO.builder()
+                .userCode(user.getUserCode())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .phone(user.getPhone())
+                .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
+                .build();
     }
 
     public List<TeacherDTO> getAllTeachers() {
@@ -151,6 +170,24 @@ public class UserService {
                 .toList();
     }
 
+    public TeacherDTO getTeacherByUserCode(String userCode) {
+        if (!isExistUserCode(userCode)) {
+            throw new ResourceNotFoundException("User code is not exists");
+        }
+        User user = this.userRepository.findOneByUserCode(userCode);
+        return TeacherDTO.builder()
+                .userCode(user.getUserCode())
+                .fullName(user.getFullName())
+                .email(user.getEmail())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .phone(user.getPhone())
+                .departmentCode(user.getDepartment() != null ? user.getDepartment().getDepartmentCode() : null)
+                .departmentName(user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null)
+                .build();
+    }
+
     public User getUserByUserCode(String userCode) {
         if (!isExistUserCode(userCode)) {
             throw new ResourceNotFoundException("User not found with user code");
@@ -167,11 +204,8 @@ public class UserService {
                 .gender(user.getGender())
                 .address(user.getAddress())
                 .phone(user.getPhone())
+                .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
                 .className(user.getClassRoom().getClassName())
-                .createdAt(user.getCreatedAt())
-                .createdBy(user.getCreatedBy())
-                .updatedAt(user.getUpdatedAt())
-                .updatedBy(user.getUpdatedBy())
                 .build();
     }
 
@@ -191,6 +225,19 @@ public class UserService {
 
     private boolean isExistEmail(String email) {
         return this.userRepository.existsByEmail(email);
+    }
+
+    private boolean isExistPhone(String phone) {
+        return this.userRepository.existsByPhone(phone);
+    }
+
+    public User saveUser(User user) {
+        if (isExistUserCode(user.getUserCode()) || isExistEmail(user.getEmail()) || isExistPhone(user.getPhone())) {
+            throw new ConflictExceptionCustom("User code or email or phone already exists");
+        }
+        String hashPass = passwordEncoder.encode(user.getPassword());
+        user.setPassword(hashPass);
+        return this.userRepository.save(user);
     }
 
     public StudentDTOUpdate createStudent(StudentDTOUpdate studentDTOUpdate) {
@@ -254,29 +301,24 @@ public class UserService {
         this.userRepository.deleteUserByUserCode(userCode);
     }
 
-    private StudentDTOUpdate convertToStudentDTOUpdate(User user) {
-        return StudentDTOUpdate.builder()
-                .userCode(user.getUserCode())
-                .fullName(user.getFullName())
-                .email(user.getEmail())
-                .password(user.getPassword())
-                .dateOfBirth(user.getDateOfBirth())
-                .gender(user.getGender())
-                .address(user.getAddress())
-                .phone(user.getPhone())
-                .className(user.getClassRoom().getClassName())
-                .createdAt(user.getCreatedAt())
-                .createdBy(user.getCreatedBy())
-                .updatedAt(user.getUpdatedAt())
-                .updatedBy(user.getUpdatedBy())
-                .build();
-    }
+    // private StudentDTO convertToStudentDTO(User user) {
+    // return StudentDTO.builder()
+    // .userCode(user.getUserCode())
+    // .fullName(user.getFullName())
+    // .email(user.getEmail())
+    // .dateOfBirth(user.getDateOfBirth())
+    // .gender(user.getGender())
+    // .address(user.getAddress())
+    // .phone(user.getPhone())
+    // .className(user.getClassRoom().getClassName())
+    // .build();
+    // }
 
-    public StudentDTOUpdate getStudentByUserCode(String userCode) {
+    public StudentDTO getStudentByUserCode(String userCode) {
         if (!isExistUserCode(userCode)) {
             throw new ResourceNotFoundException("User code is not exists");
         }
-        return convertToStudentDTOUpdate(this.userRepository.findOneByUserCode(userCode));
+        return convertToStudentDTO(this.userRepository.findOneByUserCode(userCode));
 
     }
 

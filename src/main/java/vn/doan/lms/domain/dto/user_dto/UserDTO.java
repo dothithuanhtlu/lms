@@ -34,7 +34,4 @@ public class UserDTO {
     @NotBlank(message = "Role mustn't be empty")
     private String roleName;
 
-    private String departmentName;
-    private String majorName;
-
 }

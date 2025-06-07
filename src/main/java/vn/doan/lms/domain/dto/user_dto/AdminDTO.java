@@ -1,9 +1,6 @@
 package vn.doan.lms.domain.dto.user_dto;
 
-import java.time.Instant;
 import java.time.LocalDate;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -19,7 +16,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class StudentDTO {
+public class AdminDTO {
 
     @NotBlank(message = "UserCode mustn't be empty")
     private String userCode;
@@ -46,8 +43,5 @@ public class StudentDTO {
 
     @NotBlank(message = "Role mustn't be empty")
     private String roleName;
-
-    @NotBlank(message = "ClassRoom mustn't be empty")
-    private String className;
 
 }

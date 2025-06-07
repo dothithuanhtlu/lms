@@ -4,8 +4,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import vn.doan.lms.domain.User;
+import vn.doan.lms.domain.dto.user_dto.AdminDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
+import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTO;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.service.implements_class.UserService;
@@ -51,18 +54,18 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newStudent);
     }
 
-    @DeleteMapping("/admin/students/{userCode}")
+    @DeleteMapping("/admin/student/{userCode}")
     public ResponseEntity<Void> deleteStudent(@PathVariable("userCode") String userCode)
             throws UserCodeValidationException {
         this.userService.deleteStudent(userCode);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/admin/students/{userCode}")
-    public ResponseEntity<StudentDTOUpdate> getStudentByUserCode(@PathVariable("userCode") String userCode)
+    @GetMapping("/admin/student/{userCode}")
+    public ResponseEntity<StudentDTO> getStudentByUserCode(@PathVariable("userCode") String userCode)
             throws UserCodeValidationException {
-        StudentDTOUpdate studentDTOUpdate = this.userService.getStudentByUserCode(userCode);
-        return ResponseEntity.ok(studentDTOUpdate);
+        StudentDTO studentDTO = this.userService.getStudentByUserCode(userCode);
+        return ResponseEntity.ok(studentDTO);
     }
 
     @GetMapping("/admin/users/statistics")
@@ -77,6 +80,30 @@ public class UserController {
             @RequestParam("pageSize") Optional<String> pageSizeOptional) {
         return ResponseEntity.ok(this.userService.getAllUsers(currentOptional, pageSizeOptional));
     }
+
+    @GetMapping("/admin/teachers")
+    public ResponseEntity<List<TeacherDTO>> getAllTeachers() {
+        List<TeacherDTO> teachers = userService.getAllTeachers();
+        return ResponseEntity.ok(teachers);
+    }
+
+    @GetMapping("/admin/teacher/{userCode}")
+    public ResponseEntity<TeacherDTO> getTeacherByUserCode(@PathVariable("userCode") String userCode) {
+        TeacherDTO teacher = userService.getTeacherByUserCode(userCode);
+        return ResponseEntity.ok(teacher);
+    }
+
+    @GetMapping("/admin/admin/{userCode}")
+    public ResponseEntity<AdminDTO> getAdminByUserCode(@PathVariable("userCode") String userCode) {
+        AdminDTO admin = userService.getAdminByUserCode(userCode);
+        return ResponseEntity.ok(admin);
+    }
+
+    @PostMapping("/users")
+    public ResponseEntity<User> postMethodName(@Valid @RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.saveUser(user));
+    }
+
 }
 
 // @GetMapping("/users/{userCode}")
