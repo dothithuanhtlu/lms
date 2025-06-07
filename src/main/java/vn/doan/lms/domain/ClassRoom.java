@@ -40,9 +40,6 @@ public class ClassRoom {
 
     private String description;
     @NotBlank(message = "MaxStudents mustn't be empty")
-    private Integer maxStudents;
-    @Column(columnDefinition = "INT DEFAULT 0")
-    private Integer currentStudents;
 
     @OneToMany(mappedBy = "classRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<User> users;

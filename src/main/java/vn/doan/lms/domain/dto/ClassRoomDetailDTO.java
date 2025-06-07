@@ -14,8 +14,6 @@ public class ClassRoomDetailDTO {
     private long id;
     private String className;
     private String description;
-    private Integer maxStudents;
-    private Integer currentStudents;
 
     // Thông tin giáo viên chủ nhiệm
     private UserDTO advisor;

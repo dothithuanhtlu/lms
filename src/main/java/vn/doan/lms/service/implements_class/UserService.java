@@ -29,8 +29,10 @@ import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTO;
+import vn.doan.lms.domain.dto.user_dto.UserDTOCreate;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
+import vn.doan.lms.repository.DepartmentRepository;
 import vn.doan.lms.repository.RoleRepository;
 import vn.doan.lms.repository.UserRepository;
 import vn.doan.lms.util.SecurityUtil;
@@ -54,6 +56,7 @@ public class UserService {
     private EntityManager entityManager;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final DepartmentRepository departmentRepository;
 
     public List<TeacherSelectDTO> getTeachersForSelect() {
         List<User> users = this.userRepository.findAll();
@@ -231,13 +234,28 @@ public class UserService {
         return this.userRepository.existsByPhone(phone);
     }
 
-    public User saveUser(User user) {
-        if (isExistUserCode(user.getUserCode()) || isExistEmail(user.getEmail()) || isExistPhone(user.getPhone())) {
+    public UserDTOCreate saveUser(UserDTOCreate userDTOCreate) {
+        if (isExistUserCode(userDTOCreate.getUserCode()) || isExistEmail(userDTOCreate.getEmail())
+                || isExistPhone(userDTOCreate.getPhone())) {
             throw new ConflictExceptionCustom("User code or email or phone already exists");
         }
-        String hashPass = passwordEncoder.encode(user.getPassword());
-        user.setPassword(hashPass);
-        return this.userRepository.save(user);
+        String hashPass = passwordEncoder.encode(userDTOCreate.getPassword());
+        userDTOCreate.setPassword(hashPass);
+        User user = User.builder()
+                .userCode(userDTOCreate.getUserCode())
+                .email(userDTOCreate.getEmail())
+                .fullName(userDTOCreate.getFullName())
+                .dateOfBirth(userDTOCreate.getDateOfBirth())
+                .gender(userDTOCreate.getGender())
+                .address(userDTOCreate.getAddress())
+                .phone(userDTOCreate.getPhone())
+                .password(userDTOCreate.getPassword())
+                .role(this.roleRepository.findOneByNameRole(userDTOCreate.getRoleName()))
+                .classRoom(this.classRoomRepository.findByClassName(userDTOCreate.getClassName()))
+                .department(this.departmentRepository.findOneByNameDepartment(userDTOCreate.getDepartmentName()))
+                .build();
+        this.userRepository.save(user);
+        return userDTOCreate;
     }
 
     public StudentDTOUpdate createStudent(StudentDTOUpdate studentDTOUpdate) {

@@ -10,6 +10,7 @@ import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTO;
+import vn.doan.lms.domain.dto.user_dto.UserDTOCreate;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.service.implements_class.UserService;
 import vn.doan.lms.util.error.EmailValidationException;
@@ -99,9 +100,9 @@ public class UserController {
         return ResponseEntity.ok(admin);
     }
 
-    @PostMapping("/users")
-    public ResponseEntity<User> postMethodName(@Valid @RequestBody User user) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.saveUser(user));
+    @PostMapping("/admin/user")
+    public ResponseEntity<UserDTOCreate> postMethodName(@Valid @RequestBody UserDTOCreate userDTOCreate) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.saveUser(userDTOCreate));
     }
 
 }
