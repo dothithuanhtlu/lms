@@ -8,6 +8,7 @@ import vn.doan.lms.domain.Department;
 import vn.doan.lms.domain.dto.CourseDTO;
 import vn.doan.lms.domain.dto.CourseDetailDTO;
 import vn.doan.lms.domain.dto.DepartmentDTO;
+import vn.doan.lms.domain.dto.DepartmentRequestDTO;
 import vn.doan.lms.domain.dto.MajorDTO;
 import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
@@ -78,34 +79,22 @@ public class DepartmentController {
         return ResponseEntity.ok(this.departmentService.getAllDepartmentNames());
     }
 
-    // Lay danh sach lop hoc phan theo id mon hoc
-    @GetMapping("/admin/department/major/subjects/{subjectId}/courses")
-    public ResponseEntity<List<CourseDTO>> getCoursesBySubjectId(@PathVariable("subjectId") long subjectId) {
-        return ResponseEntity.ok(this.courseService.getCoursesBySubjectId(subjectId));
-    }
-
-    // Lay danh sach hoc ky cua cac lop hoc phan theo id mon hoc
-    @GetMapping("/admin/department/major/subject/{subjectId}/courses/semesters")
-    public ResponseEntity<List<String>> getSemesterBySubjectIdCourse(@PathVariable("subjectId") long subjectId) {
-        return ResponseEntity.ok(this.courseService.getSemesterBySubjectIdCourse(subjectId));
+    @GetMapping("/departments/allresponses")
+    public ResponseEntity<List<DepartmentRequestDTO>> getAllDepartmentRequests() {
+        return ResponseEntity.ok(this.departmentService.getAllDepartmentRequests());
     }
 
     // Lay ten mon hoc theo id
-    @GetMapping("/admin/department/major/subject/{subjectId}/name")
+    @GetMapping("/admin/department/major/subject/{subjectId}/teachers")
     public ResponseEntity<String> getSubjectNameBySubjectId(@PathVariable("subjectId") long subjectId) {
         return ResponseEntity.ok(this.subjectService.getSubjectNameBySubjectId(subjectId));
     }
 
-    // Lay chi tiet lop hoc phan theo id
-    @GetMapping("/admin/department/major/subject/course/{courseId}")
-    public ResponseEntity<CourseDetailDTO> getCourseByCourseId(@PathVariable("courseId") long courseId) {
-        return ResponseEntity.ok(this.courseService.getCourseDetails(courseId));
-    }
-
     // lay giao vien teacherselectdto theo id khoa
-    @GetMapping("/admin/department/teachers_select")
-    public ResponseEntity<List<TeacherSelectDTO>> getTeachersForSelect() {
-        return ResponseEntity.ok(userService.getTeachersForSelect());
+    @GetMapping("/admin/department/{departmentId}/teachers_select")
+    public ResponseEntity<List<TeacherSelectDTO>> getTeachersForSelect(
+            @PathVariable("departmentId") long departmentId) {
+        return ResponseEntity.ok(userService.getTeachersForSelect(departmentId));
     }
 
     // Tao moi department

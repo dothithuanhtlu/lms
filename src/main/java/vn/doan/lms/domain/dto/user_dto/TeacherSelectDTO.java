@@ -16,10 +16,14 @@ public class TeacherSelectDTO {
     private long id;
     private String fullName;
     private String userCode;
+    private String email;
+    private String phone;
 
     public TeacherSelectDTO(User user) {
         this.id = user.getId();
         this.fullName = user.getFullName();
         this.userCode = user.getUserCode();
+        this.email = user.getEmail();
+        this.phone = user.getPhone();
     }
 }

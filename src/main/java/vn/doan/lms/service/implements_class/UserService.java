@@ -58,8 +58,11 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final DepartmentRepository departmentRepository;
 
-    public List<TeacherSelectDTO> getTeachersForSelect() {
-        List<User> users = this.userRepository.findAll();
+    public List<TeacherSelectDTO> getTeachersForSelect(long departmentId) {
+        if (!this.departmentRepository.existsById(departmentId)) {
+            throw new ResourceNotFoundException("Department not found with id: " + departmentId);
+        }
+        List<User> users = this.userRepository.findAllByDepartmentId(departmentId);
         if (users == null || users.isEmpty()) {
             throw new ResourceNotFoundException("No teachers found for the given department ID");
         }

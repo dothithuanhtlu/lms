@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Subject;
+import vn.doan.lms.domain.dto.MajorRequestDTO;
 import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.repository.MajorRepository;
 import vn.doan.lms.repository.SubjectRepository;
@@ -36,4 +37,23 @@ public class SubjectService {
         }
         return this.subjectRepository.findById(subjectId).get().getSubjectName();
     }
+
+    public List<SubjectDTO> getSubjectDTOsByMajorId(long majorId) {
+        if (!this.majorRepository.existsById(majorId)) {
+            throw new ResourceNotFoundException("Major not found with id: " + majorId);
+        }
+        return this.subjectRepository.findAllByMajorId(majorId)
+                .stream()
+                .map(SubjectDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public SubjectDTO getSubjectBySubjectId(long subjectId) {
+        if (!this.subjectRepository.existsById(subjectId)) {
+            throw new ResourceNotFoundException("Subject not found with id");
+        }
+        return this.subjectRepository.findById(subjectId)
+                .map(SubjectDTO::new).get();
+    }
+
 }

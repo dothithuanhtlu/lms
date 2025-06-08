@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Major;
 import vn.doan.lms.domain.dto.MajorDTO;
+import vn.doan.lms.domain.dto.MajorRequestDTO;
 import vn.doan.lms.repository.DepartmentRepository;
 import vn.doan.lms.repository.MajorRepository;
 import vn.doan.lms.util.error.ResourceNotFoundException;
@@ -43,6 +44,18 @@ public class MajorService {
     public List<MajorDTO> getAllMajors() {
         return majorRepository.findAll().stream()
                 .map(MajorDTO::new)
+                .collect(Collectors.toList());
+    }
+
+    public List<MajorRequestDTO> getMajorRequestDTOsByDepartmentId(long departmentId) {
+        if (!departmentRepository.existsById(departmentId)) {
+            throw new ResourceNotFoundException("Department not found with id: " + departmentId);
+        }
+        return majorRepository.findAllByDepartmentId(departmentId).stream()
+                .map(major -> MajorRequestDTO.builder()
+                        .id(major.getId())
+                        .majorName(major.getMajorName())
+                        .build())
                 .collect(Collectors.toList());
     }
 

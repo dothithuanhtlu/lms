@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -39,7 +40,12 @@ public class ClassRoom {
     private String className;
 
     private String description;
-    @NotBlank(message = "MaxStudents mustn't be empty")
+
+    @NotNull(message = "MaxStudents mustn't be empty")
+    private Integer maxStudents;
+
+    @Builder.Default
+    private Integer currentStudents = 0;
 
     @OneToMany(mappedBy = "classRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<User> users;

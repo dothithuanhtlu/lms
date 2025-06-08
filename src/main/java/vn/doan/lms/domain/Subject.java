@@ -47,15 +47,10 @@ public class Subject {
     @NotBlank(message = "Credits mustn't be empty")
     private Integer credits;
 
-    private String preferredSemesterPattern;
+    private String description;
 
     @OneToMany(mappedBy = "subject", fetch = FetchType.LAZY)
     private List<Course> courses = new ArrayList<>();
-
-    @Column(nullable = false)
-    @NotBlank(message = "SubjectType mustn't be empty")
-    @Pattern(regexp = "GENERAL|SPECIALIZED", message = "SubjectType must be GENERAL or SPECIALIZED")
-    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "major_id")

@@ -1,8 +1,10 @@
 package vn.doan.lms.domain;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -54,13 +56,17 @@ public class Course {
     private Integer maxStudents;
 
     @Column(columnDefinition = "INT DEFAULT 0")
+    @Builder.Default
     private Integer currentStudents = 0;
 
-    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
+    @NotNull(message = "StartDate mustn't be empty")
+    @Column(name = "start_date")
+    private LocalDate startDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "semester_id", nullable = false)
-    @NotNull(message = "Semester mustn't be null")
-    private Semester semester;
+    @NotNull(message = "EndDate mustn't be empty")
+    @Column(name = "end_date")
+    private LocalDate endDate;
 }

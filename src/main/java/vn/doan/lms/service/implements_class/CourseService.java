@@ -1,7 +1,7 @@
 package vn.doan.lms.service.implements_class;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
@@ -9,42 +9,40 @@ import org.springframework.stereotype.Service;
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Course;
 import vn.doan.lms.domain.Enrollment;
-import vn.doan.lms.domain.Semester;
 import vn.doan.lms.domain.dto.CourseDTO;
+import vn.doan.lms.domain.dto.CourseDTOInfo;
 import vn.doan.lms.domain.dto.CourseDetailDTO;
 import vn.doan.lms.repository.CourseRepository;
 import vn.doan.lms.repository.EnrollmentRepository;
-import vn.doan.lms.repository.SubjectRepository;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
 @Service
 @AllArgsConstructor
 public class CourseService {
     private final CourseRepository courseRepository;
-    private final SubjectRepository subjectRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final UserService userService;
+
+    public CourseDTOInfo getInforCourses() {
+        long totalCourse = courseRepository.count();
+
+        LocalDate today = LocalDate.now();
+
+        long countCourseEnded = courseRepository.countByEndDateBefore(today);
+        long countCourseUpcoming = courseRepository.countByStartDateAfter(today);
+        long countCourseActive = courseRepository.countByStartDateLessThanEqualAndEndDateGreaterThanEqual(today, today);
+
+        return new CourseDTOInfo(totalCourse, countCourseActive, countCourseEnded, countCourseUpcoming);
+    }
 
     public List<CourseDTO> getCoursesBySubjectId(long subjectId) {
         if (!courseRepository.existsById(subjectId)) {
             throw new ResourceNotFoundException("No courses found for subject with id: " + subjectId);
         }
-        return courseRepository.findById(subjectId).stream()
+        return courseRepository.findAllBySubjectId(subjectId).stream()
                 .map(CourseDTO::new)
                 .collect(Collectors.toList());
 
-    }
-
-    public List<String> getSemesterBySubjectIdCourse(long subjectId) {
-        if (!this.subjectRepository.existsById(subjectId)) {
-            throw new ResourceNotFoundException("Subject not found with id: " + subjectId);
-        }
-        return this.courseRepository.findAllBySubjectId(subjectId)
-                .stream()
-                .map(Course::getSemester)
-                .filter(Objects::nonNull)
-                .map(Semester::getId)
-                .distinct()
-                .toList();
     }
 
     public CourseDetailDTO getCourseDetails(Long courseId) {
@@ -54,5 +52,38 @@ public class CourseService {
         List<Enrollment> enrollments = enrollmentRepository.findByCourseIdWithStudent(courseId);
 
         return new CourseDetailDTO(course, enrollments);
+    }
+
+    public void deleteCourseById(Long courseId) {
+        if (!courseRepository.existsById(courseId)) {
+            throw new ResourceNotFoundException("Course not found with id: " + courseId);
+        }
+        courseRepository.deleteById(courseId);
+    }
+
+    // private Course toCourse(CourseDTO courseDTO) {
+    // return Course.builder()
+    // .id(courseDTO.getId())
+    // .courseCode(courseDTO.getCourseCode())
+    // .maxStudents(courseDTO.getMaxStudents())
+    // .currentStudents(courseDTO.getCurrentStudents())
+    // .startDate(courseDTO.getStartDate())
+    // .endDate(courseDTO.getEndDate())
+    // .teacher(this.userService.getUserByUserCode(courseDTO.getTeacherCode()))
+    // .build();
+    // }
+
+    public void updateCourse(CourseDTO courseDTO, long courseId) {
+        if (!courseRepository.existsById(courseId)) {
+            throw new ResourceNotFoundException("Course not found with id");
+        }
+        Course course = this.courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseDTO.getId()));
+        course.setCourseCode(courseDTO.getCourseCode());
+        course.setMaxStudents(courseDTO.getMaxStudents());
+        course.setStartDate(courseDTO.getStartDate());
+        course.setEndDate(courseDTO.getEndDate());
+        course.setTeacher(this.userService.getUserByUserCode(courseDTO.getTeacherCode()));
+        this.courseRepository.save(course);
     }
 }

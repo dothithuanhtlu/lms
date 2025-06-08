@@ -24,6 +24,9 @@ public class ClassRoomDetailDTO {
     // Danh sách sinh viên
     private List<UserDTO> students;
 
+    private Integer maxStudents;
+    private Integer currentStudents;
+
     @Data
     @Builder
     @NoArgsConstructor

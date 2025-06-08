@@ -9,6 +9,7 @@ import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.Department;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.DepartmentDTO;
+import vn.doan.lms.domain.dto.DepartmentRequestDTO;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.repository.DepartmentRepository;
 import vn.doan.lms.repository.MajorRepository;
@@ -74,6 +75,15 @@ public class DepartmentService {
     public List<String> getAllDepartmentNames() {
         return this.departmentRepository.findAll().stream()
                 .map(Department::getNameDepartment)
+                .collect(Collectors.toList());
+    }
+
+    public List<DepartmentRequestDTO> getAllDepartmentRequests() {
+        return this.departmentRepository.findAll().stream()
+                .map(department -> DepartmentRequestDTO.builder()
+                        .id(department.getId())
+                        .departmentName(department.getNameDepartment())
+                        .build())
                 .collect(Collectors.toList());
     }
 }
