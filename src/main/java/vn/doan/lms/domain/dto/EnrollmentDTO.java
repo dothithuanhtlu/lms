@@ -21,7 +21,6 @@ public class EnrollmentDTO {
     private LocalDateTime enrolledAt = LocalDateTime.now();
     private Float midtermScore;
     private Float finalScore;
-    private Float attendanceRate;
     @Pattern(regexp = "REGISTERED|COMPLETED|DROPPED|FAILED", message = "Status mustn't be empty")
     private String status;
 
@@ -31,7 +30,6 @@ public class EnrollmentDTO {
         this.studentName = enrollment.getStudent().getFullName();
         this.midtermScore = enrollment.getMidtermScore();
         this.finalScore = enrollment.getFinalScore();
-        this.attendanceRate = enrollment.getAttendanceRate();
         this.status = enrollment.getStatus();
     }
 }

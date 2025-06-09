@@ -30,6 +30,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
         long countByRole_NameRole(String roleName);
 
+        @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
+                        "FROM User u " +
+                        "JOIN u.classRoom c " +
+                        "JOIN c.major m " +
+                        "JOIN m.department d " +
+                        "WHERE u.userCode = :userCode AND d.id = :departmentId")
+        boolean existsByUserCodeAndDepartmentId(@Param("userCode") String userCode,
+                        @Param("departmentId") Long departmentId);
+
         List<User> findAllByRoleId(Long roleId);
 
         @Query(value = "CALL update_stu(:p_class_id, :p_full_name, :p_email, :p_date_of_birth, :p_address, :p_gender, :p_stu_code, :p_role_id, :p_result)", nativeQuery = true)

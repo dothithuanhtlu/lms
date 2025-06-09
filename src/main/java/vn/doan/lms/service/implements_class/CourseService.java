@@ -61,18 +61,6 @@ public class CourseService {
         courseRepository.deleteById(courseId);
     }
 
-    // private Course toCourse(CourseDTO courseDTO) {
-    // return Course.builder()
-    // .id(courseDTO.getId())
-    // .courseCode(courseDTO.getCourseCode())
-    // .maxStudents(courseDTO.getMaxStudents())
-    // .currentStudents(courseDTO.getCurrentStudents())
-    // .startDate(courseDTO.getStartDate())
-    // .endDate(courseDTO.getEndDate())
-    // .teacher(this.userService.getUserByUserCode(courseDTO.getTeacherCode()))
-    // .build();
-    // }
-
     public void updateCourse(CourseDTO courseDTO, long courseId) {
         if (!courseRepository.existsById(courseId)) {
             throw new ResourceNotFoundException("Course not found with id");

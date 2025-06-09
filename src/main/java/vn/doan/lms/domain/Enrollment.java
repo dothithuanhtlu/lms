@@ -40,12 +40,8 @@ public class Enrollment {
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime enrolledAt = LocalDateTime.now();
-
     private Float midtermScore;
     private Float finalScore;
-    private Float attendanceRate;
 
     @Column(nullable = false)
     @Pattern(regexp = "REGISTERED|COMPLETED|DROPPED|FAILED", message = "Status mustn't be empty")

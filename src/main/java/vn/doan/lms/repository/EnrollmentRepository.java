@@ -13,4 +13,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     @Query("SELECT e FROM Enrollment e JOIN FETCH e.student WHERE e.course.id = :courseId")
     List<Enrollment> findByCourseIdWithStudent(@Param("courseId") Long courseId);
+
+    boolean existsByCourseIdAndStudentId(Long courseId, Long studentId);
+
+    void deleteByStudent_IdAndCourse_Id(Long studentId, Long courseId);
+
 }
