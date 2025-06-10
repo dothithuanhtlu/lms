@@ -25,4 +25,6 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     long countByStartDateAfter(LocalDate today);
 
     long countByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate start, LocalDate end);
+
+    List<Course> findByTeacher_Id(Long teacherId);
 }

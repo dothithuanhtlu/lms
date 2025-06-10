@@ -55,4 +55,9 @@ public class CourseController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/courses/byteacher/{teacherId}")
+    public ResponseEntity<List<CourseDTO>> getCoursesByTeacherId(@PathVariable Long teacherId) {
+        return ResponseEntity.ok(courseService.getCoursesByTeacherId(teacherId));
+    }
+
 }

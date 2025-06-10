@@ -17,7 +17,7 @@ import vn.doan.lms.domain.Course;
 @AllArgsConstructor
 @Builder
 public class CourseDTO {
-    private static final String COMPLEED_COURSE = "Completed";
+    private static final String COMPLETED_COURSE = "Completed";
     private static final String UPCOMING_COURSE = "Upcoming";
     private static final String ACTIVE_COURSE = "Active";
     private long id;
@@ -46,12 +46,13 @@ public class CourseDTO {
         this.startDate = course.getStartDate();
         this.endDate = course.getEndDate();
         if (course.getEndDate() != null && course.getEndDate().isBefore(LocalDate.now())) {
-            this.status = COMPLEED_COURSE;
+            this.status = COMPLETED_COURSE;
         } else if (course.getStartDate() != null && course.getStartDate().isAfter(LocalDate.now())) {
             this.status = UPCOMING_COURSE;
         } else {
             this.status = ACTIVE_COURSE;
         }
+        this.subjectName = course.getSubject() != null ? course.getSubject().getSubjectName() : null;
     }
 
     @NotNull(message = "StartDate mustn't be null")
@@ -60,4 +61,5 @@ public class CourseDTO {
     @NotNull(message = "EndDate mustn't be null")
     private LocalDate endDate;
     private String status;
+    private String subjectName;
 }

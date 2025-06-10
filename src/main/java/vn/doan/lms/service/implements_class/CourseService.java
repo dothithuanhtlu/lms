@@ -83,4 +83,9 @@ public class CourseService {
         }
         return (int) enrollmentRepository.countByCourseId(courseId);
     }
+
+    public List<CourseDTO> getCoursesByTeacherId(Long teacherId) {
+        List<Course> courses = courseRepository.findByTeacher_Id(teacherId);
+        return courses.stream().map(CourseDTO::new).collect(Collectors.toList());
+    }
 }
