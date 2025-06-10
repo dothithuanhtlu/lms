@@ -13,11 +13,13 @@ import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.ClassRoomDetailDTO;
 import vn.doan.lms.domain.dto.ClassRoomListDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
+import vn.doan.lms.repository.UserRepository;
 
 @AllArgsConstructor
 @Service
 public class ClassRoomService {
     private final ClassRoomRepository classRoomRepository;
+    private final UserRepository userRepository;
 
     public List<String> getAllClassName() {
         return this.classRoomRepository.findAll()
@@ -42,7 +44,7 @@ public class ClassRoomService {
                 .className(classRoom.getClassName())
                 .description(classRoom.getDescription())
                 .maxStudents(classRoom.getMaxStudents())
-                .currentStudents(classRoom.getCurrentStudents())
+                .currentStudents((int) userRepository.countByClassRoomId(classRoom.getId()))
                 .advisorName(advisor != null ? advisor.getFullName() : null)
                 .advisorUserCode(advisor != null ? advisor.getUserCode() : null)
                 .majorCode(major != null ? major.getMajorCode() : null)
@@ -60,7 +62,7 @@ public class ClassRoomService {
                 .className(classRoom.getClassName())
                 .description(classRoom.getDescription())
                 .maxStudents(classRoom.getMaxStudents())
-                .currentStudents(classRoom.getCurrentStudents())
+                .currentStudents((int) userRepository.countByClassRoomId(classRoom.getId()))
                 .advisor(convertToUserDTO(classRoom.getAdvisor()))
                 .major(convertToMajorDTO(classRoom.getMajor()))
                 .students(classRoom.getUsers().stream()

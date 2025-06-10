@@ -39,15 +39,17 @@ public class CourseService {
         if (!courseRepository.existsById(subjectId)) {
             throw new ResourceNotFoundException("No courses found for subject with id: " + subjectId);
         }
-        return courseRepository.findAllBySubjectId(subjectId).stream()
+        return courseRepository.findAllBySubjectIdWithEnrollments(subjectId).stream()
                 .map(CourseDTO::new)
                 .collect(Collectors.toList());
 
     }
 
     public CourseDetailDTO getCourseDetails(Long courseId) {
-        Course course = courseRepository.findById(courseId)
-                .orElseThrow(() -> new ResourceNotFoundException("Course not found"));
+        Course course = courseRepository.findByIdWithEnrollments(courseId);
+        if (course == null) {
+            throw new ResourceNotFoundException("Course not found");
+        }
 
         List<Enrollment> enrollments = enrollmentRepository.findByCourseIdWithStudent(courseId);
 
@@ -73,5 +75,12 @@ public class CourseService {
         course.setEndDate(courseDTO.getEndDate());
         course.setTeacher(this.userService.getUserByUserCode(courseDTO.getTeacherCode()));
         this.courseRepository.save(course);
+    }
+
+    public int getCurrentStudentCount(Long courseId) {
+        if (!courseRepository.existsById(courseId)) {
+            throw new ResourceNotFoundException("Course not found with id: " + courseId);
+        }
+        return (int) enrollmentRepository.countByCourseId(courseId);
     }
 }

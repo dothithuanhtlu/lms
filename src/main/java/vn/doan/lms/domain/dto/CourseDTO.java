@@ -42,7 +42,7 @@ public class CourseDTO {
         this.teacherName = course.getTeacher().getFullName();
         this.teacherCode = course.getTeacher().getUserCode();
         this.maxStudents = course.getMaxStudents();
-        this.currentStudents = course.getCurrentStudents();
+        this.currentStudents = course.getEnrollments() != null ? course.getEnrollments().size() : 0;
         this.startDate = course.getStartDate();
         this.endDate = course.getEndDate();
         if (course.getEndDate() != null && course.getEndDate().isBefore(LocalDate.now())) {

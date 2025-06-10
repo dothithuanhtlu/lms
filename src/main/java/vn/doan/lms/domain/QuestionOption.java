@@ -1,8 +1,5 @@
 package vn.doan.lms.domain;
 
-import java.util.List;
-
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -11,48 +8,42 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.AccessLevel;
 
 @Entity
-@Table(name = "class_rooms")
+@Table(name = "question_options")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClassRoom {
+public class QuestionOption {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Setter(AccessLevel.NONE)
     private long id;
 
-    @Column(unique = true, nullable = false)
-    @NotBlank(message = "ClassName mustn't be empty")
-    private String className;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    @NotBlank(message = "Option text mustn't be empty")
+    private String optionText;
 
-    private String description;
+    @Column(name = "option_order")
+    private Integer optionOrder;
 
-    @NotNull(message = "MaxStudents mustn't be empty")
-    private Integer maxStudents;
-
-    @OneToMany(mappedBy = "classRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<User> users;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "advisor_id")
-    private User advisor;
+    @Column(name = "is_correct")
+    @Builder.Default
+    private Boolean isCorrect = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "major_id")
-    private Major major;
-
+    @JoinColumn(name = "question_id", nullable = false)
+    @NotNull(message = "Question mustn't be null")
+    private Question question;
 }

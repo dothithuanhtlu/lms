@@ -51,17 +51,21 @@ public class Course {
     @JoinColumn(name = "teacher_id", nullable = false)
     @NotNull(message = "Teacher mustn't be null")
     private User teacher;
-
     @NotNull(message = "MaxStudents mustn't be empty")
     private Integer maxStudents;
-
-    @Column(columnDefinition = "INT DEFAULT 0")
-    @Builder.Default
-    private Integer currentStudents = 0;
 
     @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Enrollment> enrollments = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Lesson> lessons = new ArrayList<>();
+
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Assignment> assignments = new ArrayList<>();
+
     @NotNull(message = "StartDate mustn't be empty")
     @Column(name = "start_date")
     private LocalDate startDate;

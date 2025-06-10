@@ -1,6 +1,5 @@
 package vn.doan.lms.service.implements_class;
 
-import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +41,9 @@ public class EnrollmentService {
             throw new BadRequestExceptionCustom("Student already registered in course");
         }
         Enrollment errol = new Enrollment();
-        errol.setCourse(this.courseRepository.findOneById(enrollment.getCourseId()));
+        errol.setCourse(this.courseRepository.findById(enrollment.getCourseId())
+                .orElseThrow(
+                        () -> new BadRequestExceptionCustom("Course not found with id: " + enrollment.getCourseId())));
         errol.setStudent(student);
         errol.setStatus("REGISTERED");
         this.enrollmentRepository.save(errol);
