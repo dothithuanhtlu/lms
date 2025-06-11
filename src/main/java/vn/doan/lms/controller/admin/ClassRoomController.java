@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import vn.doan.lms.domain.dto.ClassRoomDetailDTO;
 import vn.doan.lms.domain.dto.ClassRoomListDTO;
-import lombok.RequiredArgsConstructor;
 
 @AllArgsConstructor
 @RestController

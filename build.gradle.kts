@@ -12,6 +12,10 @@ java {
 	sourceCompatibility = JavaVersion.VERSION_17
 }
 
+tasks.withType<JavaCompile> {
+	options.compilerArgs.add("-parameters")
+}
+
 repositories {
 	mavenCentral()
 }
@@ -25,6 +29,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
+    
+    implementation("com.cloudinary:cloudinary-http44:1.37.0")
+    implementation("commons-io:commons-io:2.11.0")
+
     runtimeOnly("com.mysql:mysql-connector-j")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     testImplementation("org.springframework.boot:spring-boot-starter-test")

@@ -16,7 +16,8 @@ import vn.doan.lms.util.error.BadRequestExceptionCustom;
 @Service
 @AllArgsConstructor
 public class EnrollmentService {
-    private static final String STUDENT_ROLE = "Student";    private final EnrollmentRepository enrollmentRepository;
+    private static final String STUDENT_ROLE = "Student";
+    private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 

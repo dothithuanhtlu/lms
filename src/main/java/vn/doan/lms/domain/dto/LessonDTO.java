@@ -44,7 +44,27 @@ public class LessonDTO {
         this.isPublished = lesson.getIsPublished();
         this.courseId = lesson.getCourse().getId();
         this.courseCode = lesson.getCourse().getCourseCode();
-        this.totalDocuments = lesson.getDocuments() != null ? lesson.getDocuments().size() : 0;
-        this.totalAssignments = lesson.getAssignments() != null ? lesson.getAssignments().size() : 0;
+
+        // Load documents
+        if (lesson.getDocuments() != null && !lesson.getDocuments().isEmpty()) {
+            this.documents = lesson.getDocuments().stream()
+                    .map(LessonDocumentDTO::new)
+                    .collect(java.util.stream.Collectors.toList());
+            this.totalDocuments = lesson.getDocuments().size();
+        } else {
+            this.documents = new java.util.ArrayList<>();
+            this.totalDocuments = 0;
+        }
+
+        // Load assignments
+        if (lesson.getAssignments() != null && !lesson.getAssignments().isEmpty()) {
+            this.assignments = lesson.getAssignments().stream()
+                    .map(vn.doan.lms.domain.dto.AssignmentDTO::new)
+                    .collect(java.util.stream.Collectors.toList());
+            this.totalAssignments = lesson.getAssignments().size();
+        } else {
+            this.assignments = new java.util.ArrayList<>();
+            this.totalAssignments = 0;
+        }
     }
 }
