@@ -3,11 +3,9 @@ package vn.doan.lms.controller.admin;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
-import vn.doan.lms.domain.Enrollment;
 import vn.doan.lms.domain.dto.EnrollmentAddUserDTO;
 import vn.doan.lms.domain.dto.EnrollmentDelDTO;
 import vn.doan.lms.service.implements_class.EnrollmentService;
-import vn.doan.lms.service.implements_class.UserService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,7 +24,7 @@ public class EnrollmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(null);
     }
 
-    @PostMapping("/enrollments/delete")
+    @DeleteMapping("/enrollments")
     public ResponseEntity<Void> deleteEnrollment(@RequestBody EnrollmentDelDTO enrollmentDelDTO) {
         this.enrollmentService.deleteEnrollment(enrollmentDelDTO);
         return ResponseEntity.noContent().build();

@@ -26,6 +26,7 @@ public class EnrollmentDTO {
 
     public EnrollmentDTO(Enrollment enrollment) {
         this.id = enrollment.getId();
+        this.studentId = enrollment.getStudent().getId();
         this.studentCode = enrollment.getStudent().getUserCode();
         this.studentName = enrollment.getStudent().getFullName();
         this.midtermScore = enrollment.getMidtermScore();

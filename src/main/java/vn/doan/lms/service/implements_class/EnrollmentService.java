@@ -16,25 +16,25 @@ import vn.doan.lms.util.error.BadRequestExceptionCustom;
 @Service
 @AllArgsConstructor
 public class EnrollmentService {
-    private static final String STUDENT_ROLE = "Student";
-
-    private final EnrollmentRepository enrollmentRepository;
+    private static final String STUDENT_ROLE = "Student";    private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
 
     public void enrollUserToCourse(EnrollmentAddUserDTO enrollment) {
-        if (!this.userRepository.findOneByUserCode(enrollment.getUserCode()).getRole().getNameRole()
-                .equals(STUDENT_ROLE)) {
-            throw new BadRequestExceptionCustom("Not found student with user code");
+        // First, check if user exists
+        User student = this.userRepository.findOneByUserCode(enrollment.getUserCode());
+        if (student == null) {
+            throw new BadRequestExceptionCustom("Student not found with user code: " + enrollment.getUserCode());
         }
+
+        // Check if user is a student
+        if (student.getRole() == null || !STUDENT_ROLE.equals(student.getRole().getNameRole())) {
+            throw new BadRequestExceptionCustom("User with code " + enrollment.getUserCode() + " is not a student");
+        }
+
         // check user belongs to department
         if (!userRepository.existsByUserCodeAndDepartmentId(enrollment.getUserCode(), enrollment.getDepartmentId())) {
             throw new BadRequestExceptionCustom("User does not belong to the specified department");
-        }
-
-        User student = this.userRepository.findOneByUserCode(enrollment.getUserCode());
-        if (student == null) {
-            throw new BadRequestExceptionCustom("Student not found with user code: ");
         }
         // check in enrollments table have student registered in course
         if (this.enrollmentRepository.existsByCourseIdAndStudentId(enrollment.getCourseId(), student.getId())) {

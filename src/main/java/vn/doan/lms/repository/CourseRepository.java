@@ -12,19 +12,40 @@ import vn.doan.lms.domain.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findAllBySubjectId(long subjectId);
+        List<Course> findAllBySubjectId(long subjectId);
 
-    @Query("SELECT c FROM Course c LEFT JOIN FETCH c.enrollments WHERE c.subject.id = :subjectId")
-    List<Course> findAllBySubjectIdWithEnrollments(@Param("subjectId") long subjectId);
+        @Query("SELECT c FROM Course c LEFT JOIN FETCH c.enrollments WHERE c.subject.id = :subjectId")
+        List<Course> findAllBySubjectIdWithEnrollments(@Param("subjectId") long subjectId);
 
-    @Query("SELECT c FROM Course c LEFT JOIN FETCH c.enrollments WHERE c.id = :courseId")
-    Course findByIdWithEnrollments(@Param("courseId") Long courseId);
+        @Query("SELECT c FROM Course c LEFT JOIN FETCH c.enrollments WHERE c.id = :courseId")
+        Course findByIdWithEnrollments(@Param("courseId") Long courseId);
 
-    long countByEndDateBefore(LocalDate today);
+        long countByEndDateBefore(LocalDate today);
 
-    long countByStartDateAfter(LocalDate today);
+        long countByStartDateAfter(LocalDate today);
 
-    long countByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate start, LocalDate end);
+        long countByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate start, LocalDate end);
 
-    List<Course> findByTeacher_Id(Long teacherId);
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.subject " +
+                        "LEFT JOIN FETCH c.teacher " +
+                        "LEFT JOIN FETCH c.enrollments e " +
+                        "LEFT JOIN FETCH e.student s " +
+                        "LEFT JOIN FETCH s.classRoom " +
+                        "WHERE c.id = :courseId")
+        Course findByIdWithFullDetails(@Param("courseId") Long courseId);
+
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.lessons " +
+                        "WHERE c.id = :courseId")
+        Course findByIdWithLessons(@Param("courseId") Long courseId);
+
+        @Query("SELECT c FROM Course c " +
+                        "LEFT JOIN FETCH c.assignments a " +
+                        "WHERE c.id = :courseId")
+        Course findByIdWithAssignments(@Param("courseId") Long courseId);
+
+        boolean existsByCourseCode(String courseCode);
+
+        List<Course> findByTeacher_Id(Long teacherId);
 }

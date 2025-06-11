@@ -24,12 +24,13 @@ public class MajorController {
     }
 
     @GetMapping("/majors/department/{departmentId}")
-    public ResponseEntity<List<MajorDTO>> getMajorsByDepartmentId(@PathVariable Long departmentId) {
+    public ResponseEntity<List<MajorDTO>> getMajorsByDepartmentId(@PathVariable("departmentId") Long departmentId) {
         return ResponseEntity.ok(majorService.getMajorDTOsByDepartmentId(departmentId));
     }
 
     @GetMapping("/majors/{departmentId}/allresponse")
-    public ResponseEntity<List<MajorRequestDTO>> getMajorsByDepartmentIdRequest(@PathVariable Long departmentId) {
+    public ResponseEntity<List<MajorRequestDTO>> getMajorsByDepartmentIdRequest(
+            @PathVariable("departmentId") Long departmentId) {
         return ResponseEntity.ok(majorService.getMajorRequestDTOsByDepartmentId(departmentId));
     }
 }
