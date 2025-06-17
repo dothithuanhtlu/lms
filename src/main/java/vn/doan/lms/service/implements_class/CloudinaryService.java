@@ -2,6 +2,7 @@ package vn.doan.lms.service.implements_class;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,9 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 public class CloudinaryService {
 
@@ -173,5 +176,150 @@ public class CloudinaryService {
         return fileName.endsWith(".mp4") || fileName.endsWith(".avi") ||
                 fileName.endsWith(".mov") || fileName.endsWith(".wmv") ||
                 fileName.endsWith(".flv") || fileName.endsWith(".webm");
+    }
+
+    public boolean deleteFolder(String folderPath) {
+        try {
+            log.info("🗑️ Deleting Cloudinary folder: {}", folderPath);
+
+            // Delete all RAW resources in the folder
+            deleteResourcesByType(folderPath, "raw");
+
+            // Delete all IMAGE resources in the folder
+            deleteResourcesByType(folderPath, "image");
+
+            // Delete all VIDEO resources in the folder
+            deleteResourcesByType(folderPath, "video");
+
+            // Finally delete the empty folder with proper parameters
+            try {
+                Map<String, Object> folderOptions = new HashMap<>();
+                cloudinary.api().deleteFolder(folderPath, folderOptions);
+                log.info("✅ Successfully deleted folder: {}", folderPath);
+            } catch (Exception e) {
+                log.warn("⚠️ Could not delete empty folder: {} - {}", folderPath, e.getMessage());
+                // This is often expected as folder might not exist or already be deleted
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            log.error("❌ Failed to delete folder: {} - Error: {}", folderPath, e.getMessage(), e);
+            return false;
+        }
+    }
+
+    // ✨ Helper method to delete resources by type
+    private void deleteResourcesByType(String folderPath, String resourceType) {
+        try {
+            log.info("🔄 Deleting {} resources in folder: {}", resourceType, folderPath);
+
+            Map<String, Object> options = new HashMap<>();
+            options.put("type", "upload");
+            options.put("prefix", folderPath + "/");
+            options.put("max_results", 500); // Maximum results per request
+
+            Map result = cloudinary.api().resources(ObjectUtils.asMap(
+                    "type", "upload",
+                    "prefix", folderPath + "/",
+                    "resource_type", resourceType,
+                    "max_results", 500));
+
+            List<Map> resources = (List<Map>) result.get("resources");
+
+            if (resources != null && !resources.isEmpty()) {
+                log.info("📂 Found {} {} files in folder to delete", resources.size(), resourceType);
+
+                // Collect public IDs to delete
+                List<String> publicIds = resources.stream()
+                        .map(resource -> (String) resource.get("public_id"))
+                        .collect(Collectors.toList());
+
+                // Delete resources in batches (Cloudinary has limits)
+                int batchSize = 100;
+                for (int i = 0; i < publicIds.size(); i += batchSize) {
+                    int endIndex = Math.min(i + batchSize, publicIds.size());
+                    List<String> batch = publicIds.subList(i, endIndex);
+
+                    Map<String, Object> deleteOptions = new HashMap<>();
+                    deleteOptions.put("type", "upload");
+                    deleteOptions.put("resource_type", resourceType);
+
+                    Map deleteResult = cloudinary.api().deleteResources(batch, deleteOptions);
+                    log.info("🗑️ Deleted batch of {} {} files", batch.size(), resourceType);
+                }
+
+                log.info("✅ Deleted total {} {} files from folder", publicIds.size(), resourceType);
+            } else {
+                log.info("📂 No {} files found in folder: {}", resourceType, folderPath);
+            }
+
+        } catch (Exception e) {
+            log.warn("⚠️ Failed to delete {} resources in folder {}: {}", resourceType, folderPath, e.getMessage());
+        }
+    }
+
+    // ✨ Delete single file by public ID - IMPROVED
+    public boolean deleteFile(String publicId, String resourceType) {
+        try {
+            log.info("🗑️ Deleting file: {} (type: {})", publicId, resourceType);
+
+            Map<String, Object> options = new HashMap<>();
+            options.put("type", "upload");
+            options.put("resource_type", resourceType != null ? resourceType : "raw");
+
+            Map result = cloudinary.api().deleteResources(Arrays.asList(publicId), options);
+
+            // Check deletion result
+            Map deleted = (Map) result.get("deleted");
+            if (deleted != null && deleted.containsKey(publicId)) {
+                String status = (String) deleted.get(publicId);
+                if ("deleted".equals(status)) {
+                    log.info("✅ File successfully deleted: {}", publicId);
+                    return true;
+                } else {
+                    log.warn("⚠️ File deletion status: {} for {}", status, publicId);
+                    return false;
+                }
+            } else {
+                log.warn("⚠️ No deletion status returned for: {}", publicId);
+                return false;
+            }
+
+        } catch (Exception e) {
+            log.error("❌ Failed to delete file: {} - Error: {}", publicId, e.getMessage());
+            return false;
+        }
+    }
+
+    // ✨ ALTERNATIVE: Delete all resources in folder by prefix (Simpler approach)
+    public boolean deleteFolderByPrefix(String folderPath) {
+        try {
+            log.info("🗑️ Deleting all resources with prefix: {}", folderPath);
+
+            // Delete by prefix for each resource type
+            String[] resourceTypes = { "raw", "image", "video" };
+
+            for (String resourceType : resourceTypes) {
+                try {
+                    Map<String, Object> deleteOptions = new HashMap<>();
+                    deleteOptions.put("type", "upload");
+                    deleteOptions.put("resource_type", resourceType);
+
+                    // Use prefix to delete all resources starting with folderPath
+                    Map result = cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
+                    log.info("✅ Deleted {} resources with prefix: {}", resourceType, folderPath);
+
+                } catch (Exception e) {
+                    log.warn("⚠️ No {} resources found with prefix: {} - {}", resourceType, folderPath, e.getMessage());
+                }
+            }
+
+            return true;
+
+        } catch (Exception e) {
+            log.error("❌ Failed to delete resources by prefix: {} - {}", folderPath, e.getMessage());
+            return false;
+        }
     }
 }

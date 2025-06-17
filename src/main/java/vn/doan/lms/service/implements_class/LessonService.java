@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.Course;
@@ -57,7 +56,7 @@ public class LessonService {
 
         // 1. Validate and get course
         Course course = courseRepository.findById(request.getCourseId())
-                .orElseThrow(() -> new EntityNotFoundException("Course not found with id: " + request.getCourseId()));
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + request.getCourseId()));
 
         // 2. Map request to entity using ModelMapper
         Lesson lesson = modelMapper.map(request, Lesson.class);
@@ -77,6 +76,123 @@ public class LessonService {
 
         // 5. Map entity to response using ModelMapper
         return mapToLessonResponse(lesson);
+    }
+
+    public void deleteLesson(Long lessonId) {
+        log.info("🗑️ Deleting lesson with ID: {}", lessonId);
+
+        // 1. Get lesson with documents
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+
+        log.info("📚 Found lesson: {} with {} documents", lesson.getTitle(), lesson.getDocuments().size());
+
+        // 2. Delete entire folder from Cloudinary (Primary method)
+        String folderPath = "lessons/" + lessonId;
+
+        // Try the prefix-based deletion first (more reliable)
+        boolean folderDeleted = cloudinaryService.deleteFolderByPrefix(folderPath);
+
+        if (!folderDeleted) {
+            log.warn("⚠️ Prefix deletion failed, trying folder deletion method");
+            folderDeleted = cloudinaryService.deleteFolder(folderPath);
+        }
+
+        if (!folderDeleted) {
+            log.warn("⚠️ Both Cloudinary deletion methods failed, trying individual file deletion");
+
+            // 3. Fallback: Delete individual files from Cloudinary
+            if (lesson.getDocuments() != null && !lesson.getDocuments().isEmpty()) {
+                for (LessonDocument document : lesson.getDocuments()) {
+                    try {
+                        String publicId = extractPublicIdFromUrl(document.getFilePath());
+                        if (publicId != null) {
+                            String resourceType = determineResourceTypeFromDocumentType(document.getDocumentType());
+                            cloudinaryService.deleteFile(publicId, resourceType);
+                        }
+                    } catch (Exception e) {
+                        log.warn("⚠️ Failed to delete individual file: {} - {}", document.getFileName(),
+                                e.getMessage());
+                    }
+                }
+            }
+        }
+
+        // 4. Delete lesson from database (CASCADE will delete documents)
+        lessonRepository.delete(lesson);
+        log.info("✅ Successfully deleted lesson {} from database", lessonId);
+
+        // 5. Final verification log
+        log.info("✅ Lesson deletion completed - ID: {}, Title: {}, Cloudinary folder: {}",
+                lessonId, lesson.getTitle(), folderPath);
+    }
+
+    // ✨ Helper method to extract public ID from Cloudinary URL
+    private String extractPublicIdFromUrl(String cloudinaryUrl) {
+        try {
+            if (cloudinaryUrl == null || !cloudinaryUrl.contains("cloudinary.com")) {
+                return null;
+            }
+
+            // Example URL:
+            // https://res.cloudinary.com/cloud/raw/upload/v123/lessons/1/filename.pdf
+            // Extract: lessons/1/filename
+
+            String[] parts = cloudinaryUrl.split("/");
+            boolean foundUpload = false;
+            StringBuilder publicId = new StringBuilder();
+
+            for (int i = 0; i < parts.length; i++) {
+                if ("upload".equals(parts[i])) {
+                    foundUpload = true;
+                    continue;
+                }
+
+                if (foundUpload && i < parts.length - 1) {
+                    // Skip version if present (starts with 'v')
+                    if (parts[i + 1].startsWith("v") && parts[i + 1].matches("v\\d+")) {
+                        continue;
+                    }
+
+                    if (publicId.length() > 0) {
+                        publicId.append("/");
+                    }
+                    publicId.append(parts[i + 1]);
+                }
+            }
+
+            // Remove file extension
+            String result = publicId.toString();
+            int lastDot = result.lastIndexOf('.');
+            if (lastDot > 0) {
+                result = result.substring(0, lastDot);
+            }
+
+            log.debug("🔍 Extracted public ID: {} from URL: {}", result, cloudinaryUrl);
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ Failed to extract public ID from URL: {} - {}", cloudinaryUrl, e.getMessage());
+            return null;
+        }
+    }
+
+    // ✨ Helper method to determine resource type
+    private String determineResourceTypeFromDocumentType(LessonDocument.DocumentType documentType) {
+        switch (documentType) {
+            case IMAGE:
+                return "image";
+            case VIDEO:
+                return "video";
+            case PDF:
+            case DOC:
+            case DOCX:
+            case PPT:
+            case PPTX:
+            case OTHER:
+            default:
+                return "raw";
+        }
     }
 
     private List<LessonDocument> processLessonFiles(Lesson lesson, MultipartFile[] files,
@@ -220,7 +336,7 @@ public class LessonService {
     // ✨ Get lesson by ID using ModelMapper
     public LessonResponse getLessonById(Long id) {
         Lesson lesson = lessonRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Lesson not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + id));
 
         return mapToLessonResponse(lesson);
     }
@@ -228,7 +344,7 @@ public class LessonService {
     // ✨ Update lesson using ModelMapper
     public LessonResponse updateLesson(Long id, CreateLessonWithFilesRequest request) {
         Lesson existingLesson = lessonRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Lesson not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + id));
 
         // Map request to existing entity (skip null values)
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());

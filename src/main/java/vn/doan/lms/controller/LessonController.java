@@ -87,6 +87,12 @@ public class LessonController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{lessonId}")
+    public ResponseEntity<Void> deleteLesson(@PathVariable("lessonId") Long lessonId) {
+        lessonService.deleteLesson(lessonId);
+        return ResponseEntity.ok().build();
+    }
+
     // @GetMapping("/course/{courseId}")
     // public ResponseEntity<List<LessonDTO>>
     // getLessonsByCourse(@PathVariable("courseId") Long courseId) {
