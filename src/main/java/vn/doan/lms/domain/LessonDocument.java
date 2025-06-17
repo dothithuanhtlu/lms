@@ -35,10 +35,6 @@ public class LessonDocument {
     @Setter(AccessLevel.NONE)
     private long id;
 
-    @Column(nullable = false, length = 200)
-    @NotBlank(message = "Document title mustn't be empty")
-    private String title;
-
     @Column(nullable = false, length = 500)
     @NotBlank(message = "File path mustn't be empty")
     private String filePath;
@@ -52,15 +48,6 @@ public class LessonDocument {
     @NotNull(message = "Document type mustn't be null")
     private DocumentType documentType;
 
-    @Column(name = "file_size")
-    private Long fileSize;
-
-    @Column(name = "mime_type", length = 100)
-    private String mimeType;
-
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     @Column(name = "is_downloadable")
     @Builder.Default
     private Boolean isDownloadable = true;
@@ -68,9 +55,6 @@ public class LessonDocument {
     @Column(name = "created_at")
     @Builder.Default
     private LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "uploaded_by")
-    private String uploadedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id", nullable = false)

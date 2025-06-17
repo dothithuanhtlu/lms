@@ -13,14 +13,16 @@ import vn.doan.lms.domain.LessonDocument.DocumentType;
 @Repository
 public interface LessonDocumentRepository extends JpaRepository<LessonDocument, Long> {
 
-    List<LessonDocument> findByLessonId(Long lessonId);
+    // List<LessonDocument> findByLessonId(Long lessonId);
 
-    List<LessonDocument> findByLessonIdAndDocumentType(Long lessonId, DocumentType documentType);
+    // List<LessonDocument> findByLessonIdAndDocumentType(Long lessonId,
+    // DocumentType documentType);
 
-    @Query("SELECT ld FROM LessonDocument ld WHERE ld.lesson.course.id = :courseId")
-    List<LessonDocument> findByCourseId(@Param("courseId") Long courseId);
+    // @Query("SELECT ld FROM LessonDocument ld WHERE ld.lesson.course.id =
+    // :courseId")
+    // List<LessonDocument> findByCourseId(@Param("courseId") Long courseId);
 
     long countByLessonId(Long lessonId);
 
-    boolean existsByLessonIdAndFileName(Long lessonId, String fileName);
+    // boolean existsByLessonIdAndFileName(Long lessonId, String fileName);
 }

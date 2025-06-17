@@ -46,9 +46,6 @@ public class Assignment {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "TEXT")
-    private String instructions;
-
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Assignment type mustn't be null")
@@ -87,11 +84,6 @@ public class Assignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "lesson_id")
     private Lesson lesson;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "created_by", nullable = false)
-    @NotNull(message = "Creator mustn't be null")
-    private User createdBy;
 
     @OneToMany(mappedBy = "assignment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default

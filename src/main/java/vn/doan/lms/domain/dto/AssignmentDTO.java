@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.doan.lms.domain.Assignment;
 
 @Getter
 @Setter
@@ -34,33 +33,4 @@ public class AssignmentDTO {
     private String createdByName;
     private Integer totalQuestions;
     private Integer totalSubmissions;
-
-    public AssignmentDTO(Assignment assignment) {
-        this.id = assignment.getId();
-        this.title = assignment.getTitle();
-        this.description = assignment.getDescription();
-        this.instructions = assignment.getInstructions();
-        this.assignmentType = assignment.getAssignmentType().name();
-        this.maxScore = assignment.getMaxScore();
-        this.timeLimitMinutes = assignment.getTimeLimitMinutes();
-        this.dueDate = assignment.getDueDate();
-        this.createdAt = assignment.getCreatedAt();
-        this.updatedAt = assignment.getUpdatedAt();
-        this.isPublished = assignment.getIsPublished();
-        this.allowLateSubmission = assignment.getAllowLateSubmission();
-        this.courseId = assignment.getCourse().getId();
-        this.courseCode = assignment.getCourse().getCourseCode();
-
-        if (assignment.getLesson() != null) {
-            this.lessonId = assignment.getLesson().getId();
-            this.lessonTitle = assignment.getLesson().getTitle();
-        }
-
-        if (assignment.getCreatedBy() != null) {
-            this.createdByName = assignment.getCreatedBy().getFullName();
-        }
-
-        this.totalQuestions = assignment.getQuestions() != null ? assignment.getQuestions().size() : 0;
-        this.totalSubmissions = assignment.getSubmissions() != null ? assignment.getSubmissions().size() : 0;
-    }
 }

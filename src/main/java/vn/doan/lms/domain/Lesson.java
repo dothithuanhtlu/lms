@@ -44,12 +44,6 @@ public class Lesson {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
-    @NotNull(message = "Order mustn't be empty")
-    private Integer lessonOrder;
-
     @Column(name = "duration_minutes")
     private Integer durationMinutes;
 

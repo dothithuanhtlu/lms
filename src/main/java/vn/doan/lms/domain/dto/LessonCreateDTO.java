@@ -1,22 +1,27 @@
 package vn.doan.lms.domain.dto;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Getter
-@Setter
+@Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class LessonCreateDTO {
     private String title;
     private String description;
-    private String content;
-    private Integer lessonOrder;
     private Integer durationMinutes;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private Boolean isPublished;
-    private Long courseId;
+    private long courseId;
+    private List<MultipartFile> files;
+
 }

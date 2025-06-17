@@ -86,7 +86,7 @@ public class CourseFullDetailDTO {
                             .id(lesson.getId())
                             .title(lesson.getTitle())
                             .description(lesson.getDescription())
-                            .lessonOrder(lesson.getLessonOrder())
+
                             .durationMinutes(lesson.getDurationMinutes())
                             .isPublished(lesson.getIsPublished())
                             .totalDocuments(0) // Will be populated separately to avoid MultipleBagFetchException
