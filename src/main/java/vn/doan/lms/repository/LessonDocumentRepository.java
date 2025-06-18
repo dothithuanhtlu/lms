@@ -13,7 +13,7 @@ import vn.doan.lms.domain.LessonDocument.DocumentType;
 @Repository
 public interface LessonDocumentRepository extends JpaRepository<LessonDocument, Long> {
 
-    // List<LessonDocument> findByLessonId(Long lessonId);
+    List<LessonDocument> findByLessonId(long lessonId);
 
     // List<LessonDocument> findByLessonIdAndDocumentType(Long lessonId,
     // DocumentType documentType);

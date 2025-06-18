@@ -187,4 +187,11 @@ public class CourseService {
         List<Course> courses = courseRepository.findByTeacher_Id(teacherId);
         return courses.stream().map(CourseDTO::new).collect(Collectors.toList());
     }
+
+    public List<CourseDTO> getCoursesByStudentId(Long studentId) {
+        List<Enrollment> enrollments = enrollmentRepository.findByStudentIdWithCourse(studentId);
+        return enrollments.stream()
+                .map(enrollment -> new CourseDTO(enrollment.getCourse()))
+                .collect(Collectors.toList());
+    }
 }

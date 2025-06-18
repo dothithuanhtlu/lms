@@ -19,4 +19,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     void deleteByStudent_IdAndCourse_Id(Long studentId, Long courseId);
 
     long countByCourseId(Long courseId);
+
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.course c JOIN FETCH c.subject JOIN FETCH c.teacher WHERE e.student.id = :studentId")
+    List<Enrollment> findByStudentIdWithCourse(@Param("studentId") Long studentId);
 }

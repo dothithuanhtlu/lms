@@ -28,7 +28,7 @@ public interface LessonRepository extends JpaRepository<Lesson, Long> {
     // :courseId")
     // Integer findMaxLessonOrderByCourseId(@Param("courseId") Long courseId);
 
-    long countByCourseId(Long courseId);
+    long countByCourseId(long courseId);
 
-    long countByCourseIdAndIsPublishedTrue(Long courseId);
+    long countByCourseIdAndIsPublishedTrue(long courseId);
 }

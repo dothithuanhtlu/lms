@@ -107,8 +107,7 @@ public class LessonService {
                     try {
                         String publicId = extractPublicIdFromUrl(document.getFilePath());
                         if (publicId != null) {
-                            String resourceType = determineResourceTypeFromDocumentType(document.getDocumentType());
-                            cloudinaryService.deleteFile(publicId, resourceType);
+                            cloudinaryService.deleteFile(publicId, document.getResourceType());
                         }
                     } catch (Exception e) {
                         log.warn("⚠️ Failed to delete individual file: {} - {}", document.getFileName(),
@@ -174,24 +173,6 @@ public class LessonService {
         } catch (Exception e) {
             log.error("❌ Failed to extract public ID from URL: {} - {}", cloudinaryUrl, e.getMessage());
             return null;
-        }
-    }
-
-    // ✨ Helper method to determine resource type
-    private String determineResourceTypeFromDocumentType(LessonDocument.DocumentType documentType) {
-        switch (documentType) {
-            case IMAGE:
-                return "image";
-            case VIDEO:
-                return "video";
-            case PDF:
-            case DOC:
-            case DOCX:
-            case PPT:
-            case PPTX:
-            case OTHER:
-            default:
-                return "raw";
         }
     }
 

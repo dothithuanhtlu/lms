@@ -62,6 +62,28 @@ public class LessonDocument {
     private Lesson lesson;
 
     public enum DocumentType {
-        VIDEO, PDF, DOC, DOCX, PPT, PPTX, IMAGE, AUDIO, OTHER
+        VIDEO("video"),
+        PDF("raw"),
+        DOC("raw"),
+        DOCX("raw"),
+        PPT("raw"),
+        PPTX("raw"),
+        IMAGE("image"),
+        AUDIO("video"),
+        OTHER("raw");
+
+        private final String resourceType;
+
+        DocumentType(String resourceType) {
+            this.resourceType = resourceType;
+        }
+
+        public String getResourceType() {
+            return resourceType;
+        }
+    }
+
+    public String getResourceType() {
+        return this.documentType.getResourceType();
     }
 }
