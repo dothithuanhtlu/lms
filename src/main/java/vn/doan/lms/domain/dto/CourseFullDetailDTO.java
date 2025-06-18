@@ -94,23 +94,23 @@ public class CourseFullDetailDTO {
                     .collect(Collectors.toList());
         }
 
-        // Assignments info
-        if (course.getAssignments() != null) {
-            this.assignments = course.getAssignments().stream()
-                    .map(assignment -> AssignmentInfo.builder()
-                            .id(assignment.getId())
-                            .title(assignment.getTitle())
-                            .description(assignment.getDescription()).type(assignment.getAssignmentType().name())
-                            .maxScore(assignment.getMaxScore())
-                            .timeLimit(assignment.getTimeLimitMinutes())
-                            .dueDate(assignment.getDueDate())
-                            .isPublished(assignment.getIsPublished()).totalQuestions(0) // Will be populated separately
-                                                                                        // to avoid
-                                                                                        // MultipleBagFetchException
-                            .totalSubmissions(0) // Will be populated separately to avoid MultipleBagFetchException
-                            .build())
-                    .collect(Collectors.toList());
-        }
+//        // Assignments info
+//        if (course.getAssignments() != null) {
+//            this.assignments = course.getAssignments().stream()
+//                    .map(assignment -> AssignmentInfo.builder()
+//                            .id(assignment.getId())
+//                            .title(assignment.getTitle())
+//                            .description(assignment.getDescription()).type(assignment.getAssignmentType().name())
+//                            .maxScore(assignment.getMaxScore())
+//                            .timeLimit(assignment.getTimeLimitMinutes())
+//                            .dueDate(assignment.getDueDate())
+//                            .isPublished(assignment.getIsPublished()).totalQuestions(0) // Will be populated separately
+//                                                                                        // to avoid
+//                                                                                        // MultipleBagFetchException
+//                            .totalSubmissions(0) // Will be populated separately to avoid MultipleBagFetchException
+//                            .build())
+//                    .collect(Collectors.toList());
+//        }
     }
 
     @Data

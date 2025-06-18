@@ -28,7 +28,7 @@ public class CourseStatsService {
         long totalLessons = lessonRepository.countByCourseId(courseId);
         long publishedLessons = lessonRepository.countByCourseIdAndIsPublishedTrue(courseId);
         long totalAssignments = assignmentRepository.countByCourseId(courseId);
-        long publishedAssignments = assignmentRepository.countByCourseIdAndIsPublishedTrue(courseId);
+        long publishedAssignments = assignmentRepository.countByCourseIdAndIsPublished(courseId, true);
 
         return CourseStatsDTO.builder()
                 .courseId(courseId)

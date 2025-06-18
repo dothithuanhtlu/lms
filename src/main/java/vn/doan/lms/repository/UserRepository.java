@@ -3,6 +3,7 @@ package vn.doan.lms.repository;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -82,4 +83,5 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         @Param("p_create_by") String createBy,
                         @Param("p_result") Integer result);
 
+        Optional<User> findByEmail(String email);
 }

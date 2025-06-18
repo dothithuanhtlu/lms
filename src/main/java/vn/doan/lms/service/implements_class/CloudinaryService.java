@@ -91,7 +91,6 @@ public class CloudinaryService {
     public Map uploadFileAuto(MultipartFile file, String folderName) throws IOException {
         String contentType = file.getContentType();
         String fileName = file.getOriginalFilename();
-
         Map<String, Object> options = new HashMap<>();
         options.put("folder", folderName);
         options.put("use_filename", true);
@@ -129,8 +128,9 @@ public class CloudinaryService {
                 options.put("resource_type", "raw");
             }
         }
-
-        return cloudinary.uploader().upload(file.getBytes(), options);
+        Map result = cloudinary.uploader().upload(file.getBytes(), options);
+        result.put("name_file_original", file.getOriginalFilename());
+        return result;
     }
 
     // ✨ Upload multiple files concurrently

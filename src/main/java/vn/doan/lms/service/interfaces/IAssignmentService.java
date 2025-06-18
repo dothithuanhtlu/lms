@@ -1,34 +1,36 @@
 package vn.doan.lms.service.interfaces;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import vn.doan.lms.domain.Assignment;
+import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
+import vn.doan.lms.domain.dto.AssignmentCommentDTO;
+import vn.doan.lms.domain.dto.AssignmentCreateDTO;
+import vn.doan.lms.domain.dto.AssignmentDTO;
+import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
 // import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 // import vn.doan.lms.domain.dto.AssignmentDTO;
 
 public interface IAssignmentService {
 
-    // List<AssignmentDTO> getAssignmentsByCourseId(Long courseId);
+     ResultPaginationDTO getAssignmentsByCourseId(Long courseId, int currentOptional, int pageSizeOptional, String keyword, Boolean isPublished, LocalDate startDate, LocalDate endDate, Boolean isLateSubmission);
 
-    // List<AssignmentDTO> getPublishedAssignmentsByCourseId(Long courseId);
+     AssignmentDTO createAssignment(AssignmentCreateDTO createDTO) throws IOException;
 
-    // AssignmentDTO createAssignment(AssignmentCreateDTO createDTO);
+     AssignmentDTO updateAssignment(Long assignmentId, AssignmentUpdateDTO updateDTO);
 
-    // AssignmentDTO updateAssignment(Long assignmentId, AssignmentCreateDTO
-    // updateDTO);
+     void deleteAssignment(Long assignmentId);
 
-    // void deleteAssignment(Long assignmentId);
+     AssignmentDTO getAssignmentById(Long assignmentId);
 
-    // AssignmentDTO getAssignmentById(Long assignmentId);
+     long countAssignmentsByCourse(Long courseId);
 
-    // void publishAssignment(Long assignmentId);
+     long countPublishedAssignmentsByCourse(Long courseId, Boolean isPublished);
 
-    // void unpublishAssignment(Long assignmentId);
+     AssignmentCommentDTO createAssignmentComment(Long assignmentId, AssignmentCommentCreateDTO commentDTO);
 
-    // List<AssignmentDTO> getAssignmentsByType(Long courseId,
-    // Assignment.AssignmentType type);
-
-    // long countAssignmentsByCourse(Long courseId);
-
-    // long countPublishedAssignmentsByCourse(Long courseId);
+     List<AssignmentCommentDTO> getCommentsByAssignmentId(Long assignmentId);
 }
