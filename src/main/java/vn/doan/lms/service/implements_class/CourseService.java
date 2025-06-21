@@ -173,9 +173,8 @@ public class CourseService {
         if (dto.getAssignments() != null) {
             dto.getAssignments().forEach(assignment -> {
                 Long assignmentId = assignment.getId();
-                long questionCount = questionRepository.countByAssignmentId(assignmentId);
                 long submissionCount = submissionRepository.countByAssignmentId(assignmentId);
-                assignment.setTotalQuestions((int) questionCount);
+
                 assignment.setTotalSubmissions((int) submissionCount);
             });
         }

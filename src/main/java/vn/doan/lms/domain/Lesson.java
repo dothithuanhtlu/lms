@@ -68,7 +68,4 @@ public class Lesson {
     @Builder.Default
     private List<LessonDocument> documents = new ArrayList<>();
 
-    @OneToMany(mappedBy = "lesson", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Assignment> assignments = new ArrayList<>();
 }

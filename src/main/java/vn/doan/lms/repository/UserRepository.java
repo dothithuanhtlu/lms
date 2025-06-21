@@ -3,6 +3,7 @@ package vn.doan.lms.repository;
 import java.sql.Date;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,6 +29,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
         boolean existsByEmail(String email);
 
         long countByRole_NameRole(String roleName);
+
+        Optional<User> findByEmail(String email);
 
         @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END " +
                         "FROM User u " +

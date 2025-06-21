@@ -100,13 +100,10 @@ public class CourseFullDetailDTO {
                     .map(assignment -> AssignmentInfo.builder()
                             .id(assignment.getId())
                             .title(assignment.getTitle())
-                            .description(assignment.getDescription()).type(assignment.getAssignmentType().name())
+                            .description(assignment.getDescription())
                             .maxScore(assignment.getMaxScore())
-                            .timeLimit(assignment.getTimeLimitMinutes())
                             .dueDate(assignment.getDueDate())
-                            .isPublished(assignment.getIsPublished()).totalQuestions(0) // Will be populated separately
-                                                                                        // to avoid
-                                                                                        // MultipleBagFetchException
+                            .isPublished(assignment.getIsPublished())
                             .totalSubmissions(0) // Will be populated separately to avoid MultipleBagFetchException
                             .build())
                     .collect(Collectors.toList());
@@ -162,12 +159,9 @@ public class CourseFullDetailDTO {
         private Long id;
         private String title;
         private String description;
-        private String type;
         private Float maxScore;
-        private Integer timeLimit;
         private java.time.LocalDateTime dueDate;
         private Boolean isPublished;
-        private Integer totalQuestions;
         private Integer totalSubmissions;
     }
 }

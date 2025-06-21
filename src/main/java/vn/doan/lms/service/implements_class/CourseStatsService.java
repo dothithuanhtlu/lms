@@ -19,7 +19,7 @@ public class CourseStatsService {
     private final LessonRepository lessonRepository;
     private final AssignmentRepository assignmentRepository;
 
-    public CourseStatsDTO getCourseStatistics(Long courseId) {
+    public CourseStatsDTO getCourseStatistics(long courseId) {
         if (!courseRepository.existsById(courseId)) {
             throw new ResourceNotFoundException("Course not found with id: " + courseId);
         }

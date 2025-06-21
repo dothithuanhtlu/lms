@@ -1,11 +1,15 @@
 package vn.doan.lms.controller;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -13,99 +17,142 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import vn.doan.lms.domain.Assignment;
-import vn.doan.lms.service.implements_class.AssignmentService;
+import lombok.extern.slf4j.Slf4j;
+import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
+import vn.doan.lms.domain.dto.AssignmentCommentDTO;
+import vn.doan.lms.domain.dto.AssignmentCreateDTO;
+import vn.doan.lms.domain.dto.AssignmentDTO;
+import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
+import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
+import vn.doan.lms.service.interfaces.IAssignmentService;
 
 @RestController
 @RequestMapping("/api/assignments")
 @AllArgsConstructor
+@Slf4j
 public class AssignmentController {
 
-    // private final AssignmentService assignmentService;
+    private final IAssignmentService assignmentService;
 
-    // @GetMapping("/course/{courseId}")
-    // public ResponseEntity<List<AssignmentDTO>>
-    // getAssignmentsByCourse(@PathVariable Long courseId) {
-    // List<AssignmentDTO> assignments =
-    // assignmentService.getAssignmentsByCourseId(courseId);
-    // return ResponseEntity.ok(assignments);
-    // }
+    @GetMapping("/course/{courseId}")
+    public ResponseEntity<Object> getAssignmentsByCourse(@PathVariable Long courseId,
+            @RequestParam(defaultValue = "1") int currentOptional,
+            @RequestParam(defaultValue = "10") int pageSizeOptional,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "isPublished", required = false) Boolean isPublished,
+            @RequestParam(name = "startDate", required = false) LocalDate startDate,
+            @RequestParam(name = "endDate", required = false) LocalDate endDate,
+            @RequestParam(name = "isLateSubmission", required = false) Boolean isLateSubmission) {
+        ResultPaginationDTO assignments = assignmentService.getAssignmentsByCourseId(courseId, currentOptional - 1,
+                pageSizeOptional, keyword, isPublished, startDate, endDate, isLateSubmission);
+        return ResponseEntity.ok(assignments);
+    }
 
-    // @GetMapping("/course/{courseId}/published")
-    // public ResponseEntity<List<AssignmentDTO>>
-    // getPublishedAssignmentsByCourse(@PathVariable Long courseId) {
-    // List<AssignmentDTO> assignments =
-    // assignmentService.getPublishedAssignmentsByCourseId(courseId);
-    // return ResponseEntity.ok(assignments);
-    // }
+    @GetMapping("/detail/{assignmentId}")
+    public ResponseEntity<AssignmentDTO> getAssignmentById(@PathVariable Long assignmentId) {
+        AssignmentDTO assignment = assignmentService.getAssignmentById(assignmentId);
+        return ResponseEntity.ok(assignment);
+    }
 
-    // @GetMapping("/course/{courseId}/type")
-    // public ResponseEntity<List<AssignmentDTO>> getAssignmentsByType(
-    // @PathVariable Long courseId,
-    // @RequestParam Assignment.AssignmentType type) {
-    // List<AssignmentDTO> assignments =
-    // assignmentService.getAssignmentsByType(courseId, type);
-    // return ResponseEntity.ok(assignments);
-    // }
+    @PostMapping(value = "/create")
+    public ResponseEntity<AssignmentDTO> createAssignment(@Valid @ModelAttribute AssignmentCreateDTO createDTO)
+            throws IOException {
+        AssignmentDTO createdAssignment = assignmentService.createAssignment(createDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdAssignment);
+    }
 
-    // @GetMapping("/{assignmentId}")
-    // public ResponseEntity<AssignmentDTO> getAssignmentById(@PathVariable Long
-    // assignmentId) {
-    // AssignmentDTO assignment = assignmentService.getAssignmentById(assignmentId);
-    // return ResponseEntity.ok(assignment);
-    // }
+    @PutMapping("/update/{assignmentId}")
+    public ResponseEntity<AssignmentDTO> updateAssignment(@PathVariable Long assignmentId,
+            @Valid @ModelAttribute AssignmentUpdateDTO updateDTO) {
+        AssignmentDTO updatedAssignment = assignmentService.updateAssignment(assignmentId, updateDTO);
+        return ResponseEntity.ok(updatedAssignment);
+    }
 
-    // @PostMapping
-    // public ResponseEntity<AssignmentDTO> createAssignment(@Valid @RequestBody
-    // AssignmentCreateDTO createDTO) {
-    // AssignmentDTO createdAssignment =
-    // assignmentService.createAssignment(createDTO);
-    // return ResponseEntity.status(HttpStatus.CREATED).body(createdAssignment);
-    // }
+    @DeleteMapping("/delete/{assignmentId}")
+    public ResponseEntity<Void> deleteAssignment(@PathVariable Long assignmentId) {
+        assignmentService.deleteAssignment(assignmentId);
+        return ResponseEntity.ok().build();
+    }
 
-    // @PutMapping("/{assignmentId}")
-    // public ResponseEntity<AssignmentDTO> updateAssignment(
-    // @PathVariable Long assignmentId,
-    // @Valid @RequestBody AssignmentCreateDTO updateDTO) {
-    // AssignmentDTO updatedAssignment =
-    // assignmentService.updateAssignment(assignmentId, updateDTO);
-    // return ResponseEntity.ok(updatedAssignment);
-    // }
+    @GetMapping("/course/{courseId}/count")
+    public ResponseEntity<Long> countAssignments(@PathVariable Long courseId) {
+        long count = assignmentService.countAssignmentsByCourse(courseId);
+        return ResponseEntity.ok(count);
+    }
 
-    // @DeleteMapping("/{assignmentId}")
-    // public ResponseEntity<Void> deleteAssignment(@PathVariable Long assignmentId)
-    // {
-    // assignmentService.deleteAssignment(assignmentId);
-    // return ResponseEntity.ok().build();
-    // }
+    @GetMapping("/course/{courseId}/count/isPublished")
+    public ResponseEntity<Long> countPublishedAssignments(@PathVariable Long courseId,
+            @RequestParam("isPublished") Boolean isPublished) {
+        long count = assignmentService.countPublishedAssignmentsByCourse(courseId, isPublished);
+        return ResponseEntity.ok(count);
+    }
 
-    // @PutMapping("/{assignmentId}/publish")
-    // public ResponseEntity<Void> publishAssignment(@PathVariable Long
-    // assignmentId) {
-    // assignmentService.publishAssignment(assignmentId);
-    // return ResponseEntity.ok().build();
-    // }
+    @PostMapping("/add-comment/{assignmentId}")
+    public ResponseEntity<Object> addComment(@PathVariable Long assignmentId,
+            @Valid @RequestBody AssignmentCommentCreateDTO createDTO) {
+        AssignmentCommentDTO comment = assignmentService.createAssignmentComment(assignmentId, createDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
+    }
 
-    // @PutMapping("/{assignmentId}/unpublish")
-    // public ResponseEntity<Void> unpublishAssignment(@PathVariable Long
-    // assignmentId) {
-    // assignmentService.unpublishAssignment(assignmentId);
-    // return ResponseEntity.ok().build();
-    // }
+    @GetMapping("/comments/{assignmentId}")
+    public ResponseEntity<List<AssignmentCommentDTO>> getCommentsByAssignmentId(@PathVariable Long assignmentId) {
+        List<AssignmentCommentDTO> comments = assignmentService.getCommentsByAssignmentId(assignmentId);
+        return ResponseEntity.ok(comments);
+    }
 
-    // @GetMapping("/course/{courseId}/count")
-    // public ResponseEntity<Long> countAssignments(@PathVariable Long courseId) {
-    // long count = assignmentService.countAssignmentsByCourse(courseId);
-    // return ResponseEntity.ok(count);
-    // }
+    private void validateRequest(CreateAssignmentWithFilesRequest request, MultipartFile[] files) {
+        if (files != null && files.length > 10) {
+            throw new IllegalArgumentException("Too many files. Maximum 10 files allowed per assignment.");
+        }
 
-    // @GetMapping("/course/{courseId}/count/published")
-    // public ResponseEntity<Long> countPublishedAssignments(@PathVariable Long
-    // courseId) {
-    // long count = assignmentService.countPublishedAssignmentsByCourse(courseId);
-    // return ResponseEntity.ok(count);
-    // }
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (file.getSize() > 100 * 1024 * 1024) { // 100MB
+                    throw new IllegalArgumentException(
+                            String.format("File '%s' is too large. Maximum 100MB allowed.",
+                                    file.getOriginalFilename()));
+                }
+
+                // Log file info để debug
+                log.info("Validating file: {} (size: {} bytes, type: {})",
+                        file.getOriginalFilename(), file.getSize(), file.getContentType());
+            }
+        }
+
+        // Log request info
+        log.info("Request validation: title={}, courseId={}, files count={}",
+                request.getTitle(), request.getCourseId(), files != null ? files.length : 0);
+    }
+
+    @PostMapping(value = "/create-with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> createAssignmentWithFiles(
+            @Valid @ModelAttribute CreateAssignmentWithFilesRequest request,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) {
+
+        try {
+            log.info("Creating assignment with files, title: {}", request.getTitle());
+
+            // Validate request
+            validateRequest(request, files);
+
+            // Create assignment with files
+            AssignmentDTO assignment = assignmentService.createAssignmentWithFiles(request, files);
+
+            log.info("Assignment created successfully with ID: {}", assignment.getId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(assignment);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error creating assignment with files: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error creating assignment: " + e.getMessage());
+        }
+    }
 }
