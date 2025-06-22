@@ -40,7 +40,7 @@ public class AssignmentController {
     private final IAssignmentService assignmentService;
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<Object> getAssignmentsByCourse(@PathVariable Long courseId,
+    public ResponseEntity<Object> getAssignmentsByCourse(@PathVariable("courseId") Long courseId,
             @RequestParam(defaultValue = "1") int currentOptional,
             @RequestParam(defaultValue = "10") int pageSizeOptional,
             @RequestParam(name = "keyword", required = false) String keyword,
@@ -54,7 +54,7 @@ public class AssignmentController {
     }
 
     @GetMapping("/detail/{assignmentId}")
-    public ResponseEntity<AssignmentDTO> getAssignmentById(@PathVariable Long assignmentId) {
+    public ResponseEntity<AssignmentDTO> getAssignmentById(@PathVariable("assignmentId") Long assignmentId) {
         AssignmentDTO assignment = assignmentService.getAssignmentById(assignmentId);
         return ResponseEntity.ok(assignment);
     }
@@ -67,40 +67,41 @@ public class AssignmentController {
     }
 
     @PutMapping("/update/{assignmentId}")
-    public ResponseEntity<AssignmentDTO> updateAssignment(@PathVariable Long assignmentId,
+    public ResponseEntity<AssignmentDTO> updateAssignment(@PathVariable("assignmentId") Long assignmentId,
             @Valid @ModelAttribute AssignmentUpdateDTO updateDTO) {
         AssignmentDTO updatedAssignment = assignmentService.updateAssignment(assignmentId, updateDTO);
         return ResponseEntity.ok(updatedAssignment);
     }
 
     @DeleteMapping("/delete/{assignmentId}")
-    public ResponseEntity<Void> deleteAssignment(@PathVariable Long assignmentId) {
+    public ResponseEntity<Void> deleteAssignment(@PathVariable("assignmentId") Long assignmentId) {
         assignmentService.deleteAssignment(assignmentId);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/course/{courseId}/count")
-    public ResponseEntity<Long> countAssignments(@PathVariable Long courseId) {
+    public ResponseEntity<Long> countAssignments(@PathVariable("courseId") Long courseId) {
         long count = assignmentService.countAssignmentsByCourse(courseId);
         return ResponseEntity.ok(count);
     }
 
     @GetMapping("/course/{courseId}/count/isPublished")
-    public ResponseEntity<Long> countPublishedAssignments(@PathVariable Long courseId,
+    public ResponseEntity<Long> countPublishedAssignments(@PathVariable("courseId") Long courseId,
             @RequestParam("isPublished") Boolean isPublished) {
         long count = assignmentService.countPublishedAssignmentsByCourse(courseId, isPublished);
         return ResponseEntity.ok(count);
     }
 
     @PostMapping("/add-comment/{assignmentId}")
-    public ResponseEntity<Object> addComment(@PathVariable Long assignmentId,
+    public ResponseEntity<Object> addComment(@PathVariable("assignmentId") Long assignmentId,
             @Valid @RequestBody AssignmentCommentCreateDTO createDTO) {
         AssignmentCommentDTO comment = assignmentService.createAssignmentComment(assignmentId, createDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(comment);
     }
 
     @GetMapping("/comments/{assignmentId}")
-    public ResponseEntity<List<AssignmentCommentDTO>> getCommentsByAssignmentId(@PathVariable Long assignmentId) {
+    public ResponseEntity<List<AssignmentCommentDTO>> getCommentsByAssignmentId(
+            @PathVariable("assignmentId") Long assignmentId) {
         List<AssignmentCommentDTO> comments = assignmentService.getCommentsByAssignmentId(assignmentId);
         return ResponseEntity.ok(comments);
     }
@@ -154,5 +155,13 @@ public class AssignmentController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error creating assignment: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/{assignmentId}/publish")
+    public ResponseEntity<Void> updateStatusAssignment(
+            @PathVariable("assignmentId") Long assignmentId,
+            @RequestParam("isPublished") boolean isPublished) {
+        assignmentService.updateStatusAssignment(assignmentId, isPublished);
+        return ResponseEntity.ok().build();
     }
 }

@@ -28,6 +28,9 @@ import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.CreateLessonWithFilesRequest;
 import vn.doan.lms.domain.dto.DocumentMetadata;
 import vn.doan.lms.domain.dto.LessonResponse;
+import vn.doan.lms.domain.dto.UpdateLessonRequest;
+import vn.doan.lms.domain.dto.UpdateLessonWithFilesRequest;
+import vn.doan.lms.domain.dto.UpdateLessonRequest;
 import vn.doan.lms.repository.CourseRepository;
 import vn.doan.lms.repository.LessonDocumentRepository;
 import vn.doan.lms.repository.LessonRepository;
@@ -337,5 +340,189 @@ public class LessonService {
         // Save and return
         lessonRepository.save(existingLesson);
         return mapToLessonResponse(existingLesson);
+    }
+
+    // ✨ Update lesson status
+    public void updateStatusLesson(Long lessonId, boolean isPublished) {
+        Lesson lesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+
+        lesson.setIsPublished(isPublished);
+        lesson.setUpdatedAt(LocalDateTime.now());
+
+        lessonRepository.save(lesson);
+        log.info("Updated status of lesson ID: {} to {}", lessonId, isPublished);
+    }
+
+    // ✨ Update lesson info only (without files)
+    @Transactional
+    public LessonResponse updateLessonInfo(Long lessonId, UpdateLessonRequest request) {
+        log.info("Updating lesson info for ID: {}", lessonId);
+
+        // Find existing lesson
+        Lesson existingLesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+
+        // Update lesson information
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            existingLesson.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            existingLesson.setDescription(request.getDescription());
+        }
+        if (request.getDurationMinutes() != null) {
+            existingLesson.setDurationMinutes(request.getDurationMinutes());
+        }
+        if (request.getIsPublished() != null) {
+            existingLesson.setIsPublished(request.getIsPublished());
+        }
+
+        // Update timestamp
+        existingLesson.setUpdatedAt(LocalDateTime.now());
+
+        // Save and return
+        Lesson savedLesson = lessonRepository.save(existingLesson);
+        log.info("Successfully updated lesson info for ID: {}", lessonId);
+
+        return mapToLessonResponse(savedLesson);
+    }
+
+    // ✨ Update lesson with files - Replace all old files
+    @Transactional
+    public LessonResponse updateLessonWithFiles(Long lessonId, CreateLessonWithFilesRequest request,
+            MultipartFile[] files) throws IOException {
+        log.info("Updating lesson ID: {} with files", lessonId);
+
+        // Find existing lesson
+        Lesson existingLesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+
+        // Step 1: Delete all existing documents and their files from Cloudinary
+        if (existingLesson.getDocuments() != null && !existingLesson.getDocuments().isEmpty()) {
+            log.info("Deleting {} existing documents for lesson ID: {}", existingLesson.getDocuments().size(),
+                    lessonId);
+
+            // Delete files from Cloudinary
+            for (LessonDocument doc : existingLesson.getDocuments()) {
+                try {
+                    String publicId = extractPublicIdFromUrl(doc.getFilePath());
+                    if (publicId != null) {
+                        cloudinaryService.deleteFile(publicId, doc.getDocumentType().getResourceType());
+                        log.info("Deleted file from Cloudinary: {}", doc.getFileName());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to delete file from Cloudinary: {} - {}", doc.getFileName(), e.getMessage());
+                }
+            }
+
+            // Delete documents from database
+            lessonDocumentRepository.deleteAll(existingLesson.getDocuments());
+            existingLesson.getDocuments().clear();
+            log.info("Deleted all existing documents from database for lesson ID: {}", lessonId);
+        }
+
+        // Step 2: Update lesson basic information
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            existingLesson.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            existingLesson.setDescription(request.getDescription());
+        }
+        if (request.getDurationMinutes() != null) {
+            existingLesson.setDurationMinutes(request.getDurationMinutes());
+        }
+        if (request.getIsPublished() != null) {
+            existingLesson.setIsPublished(request.getIsPublished());
+        }
+
+        // Update timestamp
+        existingLesson.setUpdatedAt(LocalDateTime.now());
+
+        // Step 3: Process new files if provided
+        List<LessonDocument> newDocuments = new ArrayList<>();
+        if (files != null && files.length > 0) {
+            log.info("Processing {} new files for lesson ID: {}", files.length, lessonId);
+            newDocuments = processLessonFiles(existingLesson, files, request.getDocumentsMetadata());
+            if (existingLesson.getDocuments() == null) {
+                existingLesson.setDocuments(new ArrayList<>());
+            }
+            existingLesson.getDocuments().addAll(newDocuments);
+        }
+
+        // Step 4: Save updated lesson
+        Lesson savedLesson = lessonRepository.save(existingLesson);
+
+        log.info("Successfully updated lesson ID: {} with {} new documents", lessonId, newDocuments.size());
+        return mapToLessonResponse(savedLesson);
+    }
+
+    // ✨ Update lesson with files - Overloaded method for
+    // UpdateLessonWithFilesRequest
+    @Transactional
+    public LessonResponse updateLessonWithFiles(Long lessonId, UpdateLessonWithFilesRequest request,
+            MultipartFile[] files) throws IOException {
+        log.info("Updating lesson ID: {} with files using UpdateRequest", lessonId);
+
+        // Find existing lesson
+        Lesson existingLesson = lessonRepository.findById(lessonId)
+                .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
+
+        // Step 1: Delete all existing documents and their files from Cloudinary
+        if (existingLesson.getDocuments() != null && !existingLesson.getDocuments().isEmpty()) {
+            log.info("Deleting {} existing documents for lesson ID: {}", existingLesson.getDocuments().size(),
+                    lessonId);
+
+            // Delete files from Cloudinary
+            for (LessonDocument doc : existingLesson.getDocuments()) {
+                try {
+                    String publicId = extractPublicIdFromUrl(doc.getFilePath());
+                    if (publicId != null) {
+                        cloudinaryService.deleteFile(publicId, doc.getDocumentType().getResourceType());
+                        log.info("Deleted file from Cloudinary: {}", doc.getFileName());
+                    }
+                } catch (Exception e) {
+                    log.warn("Failed to delete file from Cloudinary: {} - {}", doc.getFileName(), e.getMessage());
+                }
+            }
+
+            // Delete documents from database
+            lessonDocumentRepository.deleteAll(existingLesson.getDocuments());
+            existingLesson.getDocuments().clear();
+            log.info("Deleted all existing documents from database for lesson ID: {}", lessonId);
+        }
+
+        // Step 2: Update lesson basic information
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            existingLesson.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            existingLesson.setDescription(request.getDescription());
+        }
+        if (request.getDurationMinutes() != null) {
+            existingLesson.setDurationMinutes(request.getDurationMinutes());
+        }
+        if (request.getIsPublished() != null) {
+            existingLesson.setIsPublished(request.getIsPublished());
+        }
+
+        // Update timestamp
+        existingLesson.setUpdatedAt(LocalDateTime.now());
+
+        // Step 3: Process new files if provided
+        List<LessonDocument> newDocuments = new ArrayList<>();
+        if (files != null && files.length > 0) {
+            log.info("Processing {} new files for lesson ID: {}", files.length, lessonId);
+            newDocuments = processLessonFiles(existingLesson, files, request.getDocumentsMetadata());
+            if (existingLesson.getDocuments() == null) {
+                existingLesson.setDocuments(new ArrayList<>());
+            }
+            existingLesson.getDocuments().addAll(newDocuments);
+        }
+
+        // Step 4: Save updated lesson
+        Lesson savedLesson = lessonRepository.save(existingLesson);
+
+        log.info("Successfully updated lesson ID: {} with {} new documents", lessonId, newDocuments.size());
+        return mapToLessonResponse(savedLesson);
     }
 }

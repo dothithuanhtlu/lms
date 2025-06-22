@@ -16,26 +16,29 @@ import vn.doan.lms.domain.dto.ResultPaginationDTO;
 
 public interface IAssignmentService {
 
-    ResultPaginationDTO getAssignmentsByCourseId(Long courseId, int currentOptional, int pageSizeOptional,
-            String keyword, Boolean isPublished, LocalDate startDate, LocalDate endDate, Boolean isLateSubmission);
+        ResultPaginationDTO getAssignmentsByCourseId(Long courseId, int currentOptional, int pageSizeOptional,
+                        String keyword, Boolean isPublished, LocalDate startDate, LocalDate endDate,
+                        Boolean isLateSubmission);
 
-    AssignmentDTO createAssignment(AssignmentCreateDTO createDTO) throws IOException;
+        AssignmentDTO createAssignment(AssignmentCreateDTO createDTO) throws IOException;
 
-    // New method for creating assignment with files in single request
-    AssignmentDTO createAssignmentWithFiles(CreateAssignmentWithFilesRequest request, MultipartFile[] files)
-            throws IOException;
+        // New method for creating assignment with files in single request
+        AssignmentDTO createAssignmentWithFiles(CreateAssignmentWithFilesRequest request, MultipartFile[] files)
+                        throws IOException;
 
-    AssignmentDTO updateAssignment(Long assignmentId, AssignmentUpdateDTO updateDTO);
+        AssignmentDTO updateAssignment(Long assignmentId, AssignmentUpdateDTO updateDTO);
 
-    void deleteAssignment(Long assignmentId);
+        void deleteAssignment(Long assignmentId);
 
-    AssignmentDTO getAssignmentById(Long assignmentId);
+        AssignmentDTO getAssignmentById(Long assignmentId);
 
-    long countAssignmentsByCourse(Long courseId);
+        long countAssignmentsByCourse(Long courseId);
 
-    long countPublishedAssignmentsByCourse(Long courseId, Boolean isPublished);
+        long countPublishedAssignmentsByCourse(Long courseId, Boolean isPublished);
 
-    AssignmentCommentDTO createAssignmentComment(Long assignmentId, AssignmentCommentCreateDTO commentDTO);
+        AssignmentCommentDTO createAssignmentComment(Long assignmentId, AssignmentCommentCreateDTO commentDTO);
 
-    List<AssignmentCommentDTO> getCommentsByAssignmentId(Long assignmentId);
+        List<AssignmentCommentDTO> getCommentsByAssignmentId(Long assignmentId);
+
+        void updateStatusAssignment(Long assignmentId, boolean isPublished);
 }

@@ -27,6 +27,9 @@ import vn.doan.lms.domain.Lesson;
 import vn.doan.lms.domain.dto.CreateLessonWithFilesRequest;
 import vn.doan.lms.domain.dto.LessonCreateDTO;
 import vn.doan.lms.domain.dto.LessonResponse;
+import vn.doan.lms.domain.dto.UpdateLessonRequest;
+import vn.doan.lms.domain.dto.UpdateLessonWithFilesRequest;
+import vn.doan.lms.domain.dto.UpdateLessonRequest;
 import vn.doan.lms.service.implements_class.LessonService;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 
@@ -39,6 +42,22 @@ public class LessonController {
     private final LessonService lessonService;
 
     private void validateRequest(CreateLessonWithFilesRequest request, MultipartFile[] files) {
+        if (files != null && files.length > 10) {
+            throw new IllegalArgumentException("Too many files. Maximum 10 files allowed per lesson.");
+        }
+
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (file.getSize() > 100 * 1024 * 1024) { // 100MB
+                    throw new IllegalArgumentException(
+                            String.format("File '%s' is too large. Maximum 100MB allowed.",
+                                    file.getOriginalFilename()));
+                }
+            }
+        }
+    }
+
+    private void validateUpdateRequest(UpdateLessonWithFilesRequest request, MultipartFile[] files) {
         if (files != null && files.length > 10) {
             throw new IllegalArgumentException("Too many files. Maximum 10 files allowed per lesson.");
         }
@@ -91,6 +110,66 @@ public class LessonController {
     public ResponseEntity<Void> deleteLesson(@PathVariable("lessonId") Long lessonId) {
         lessonService.deleteLesson(lessonId);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{lessonId}/publish")
+    public ResponseEntity<Void> updateStatusLesson(
+            @PathVariable("lessonId") Long lessonId,
+            @RequestParam("isPublished") boolean isPublished) {
+        lessonService.updateStatusLesson(lessonId, isPublished);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{lessonId}")
+    public ResponseEntity<?> updateLesson(
+            @PathVariable("lessonId") Long lessonId,
+            @Valid @RequestBody UpdateLessonRequest request) {
+
+        try {
+            log.info("Updating lesson info for ID: {} from user: dothithuanhtlu", lessonId);
+
+            LessonResponse response = lessonService.updateLessonInfo(lessonId, request);
+
+            log.info("Lesson info updated successfully for ID: {}", lessonId);
+            return ResponseEntity.ok(response);
+
+        } catch (EntityNotFoundException e) {
+            log.error("Lesson not found: {}", e.getMessage());
+            throw new BadRequestExceptionCustom(e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Unexpected error updating lesson info: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update lesson info: " + e.getMessage());
+        }
+    }
+
+    @PutMapping(value = "/{lessonId}/update-with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateLessonWithFiles(
+            @PathVariable("lessonId") Long lessonId,
+            @Valid @ModelAttribute UpdateLessonWithFilesRequest request,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) {
+
+        try {
+            log.info("Updating lesson ID: {} with files from user: dothithuanhtlu", lessonId);
+
+            // Validation
+            validateUpdateRequest(request, files);
+
+            LessonResponse response = lessonService.updateLessonWithFiles(lessonId, request, files);
+
+            log.info("Lesson updated successfully with ID: {}", lessonId);
+            return ResponseEntity.ok(response);
+
+        } catch (EntityNotFoundException e) {
+            log.error("Lesson not found: {}", e.getMessage());
+            throw new BadRequestExceptionCustom(e.getMessage());
+
+        } catch (Exception e) {
+            log.error("Unexpected error updating lesson: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update lesson: " + e.getMessage());
+        }
     }
 
     // @GetMapping("/course/{courseId}")

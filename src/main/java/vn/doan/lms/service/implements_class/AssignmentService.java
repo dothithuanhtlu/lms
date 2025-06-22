@@ -283,4 +283,14 @@ public class AssignmentService implements IAssignmentService {
         return documents;
     }
 
+    @Override
+    public void updateStatusAssignment(Long assignmentId, boolean isPublished) {
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+        assignment.setIsPublished(isPublished);
+        assignment.setUpdatedAt(LocalDateTime.now());
+        assignmentRepository.save(assignment);
+        log.info("Updated assignment ID: {} - Published status: {}", assignmentId, isPublished);
+    }
+
 }
