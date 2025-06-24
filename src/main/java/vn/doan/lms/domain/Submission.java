@@ -34,9 +34,6 @@ public class Submission {
     @Setter(AccessLevel.NONE)
     private long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String content;
-
     @Column(name = "file_path")
     private String filePath;
 

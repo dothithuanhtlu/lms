@@ -73,7 +73,7 @@ public class SercurityConfiguration {
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthorityPrefix("");
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("lms");
+        grantedAuthoritiesConverter.setAuthoritiesClaimName("permission");
 
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
         jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(grantedAuthoritiesConverter);
@@ -94,10 +94,10 @@ public class SercurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 // tất cả các url: /, /login không cần login đều được cho phép truy cập
-                                // .requestMatchers("/", "/login").permitAll()
+                                .requestMatchers("/", "/login", "/auth/refresh").permitAll()
                                 // còn lại đều phải login mới được truy cập
-                                // .anyRequest().authenticated())
-                                .anyRequest().permitAll())
+                                .anyRequest().authenticated())
+                // .anyRequest().permitAll())
                 .formLogin(f -> f.disable())
                 .cors(Customizer.withDefaults())
                 // sử dụng BearerTokenAuthenticationFilter (filter sẽ tự động extract - lấy

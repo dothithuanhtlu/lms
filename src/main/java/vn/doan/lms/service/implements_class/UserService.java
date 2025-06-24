@@ -138,6 +138,19 @@ public class UserService {
         }
     }
 
+    public void updateUserRefreshToken(String token, String userCode) {
+        User user = this.getUserByUserCode(userCode);
+        if (user != null) {
+            user.setRefreshToken(token);
+            this.userRepository.save(user);
+        }
+    }
+
+    public User getUserByRefreshTokenAndUserCode(String userCode, String refreshToken) {
+        return this.userRepository.findByUserCodeAndRefreshToken(userCode, refreshToken);
+
+    }
+
     public AdminDTO getAdminByUserCode(String userCode) {
         if (!isExistUserCode(userCode)) {
             throw new ResourceNotFoundException("User code is not exists");

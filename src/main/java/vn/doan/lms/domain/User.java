@@ -126,4 +126,7 @@ public class User {
         this.updatedAt = Instant.now();
     }
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String refreshToken;
+
 }

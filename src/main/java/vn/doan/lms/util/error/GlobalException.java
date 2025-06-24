@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestCookieException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -190,5 +191,16 @@ public class GlobalException {
         res.setError("Unexpected Error");
         res.setMessage(ex.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
+
+    // xử lý lỗi MissingRequestCookieException
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<CustomResponse<Object>> handleMissingCookieException(MissingRequestCookieException ex) {
+        logger.error("Missing cookie error: {}", ex.getMessage(), ex);
+        CustomResponse<Object> res = new CustomResponse<>();
+        res.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        res.setError("Missing Cookie");
+        res.setMessage("Required cookie is missing: " + ex.getCookieName());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 }

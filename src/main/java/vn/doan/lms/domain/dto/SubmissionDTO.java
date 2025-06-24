@@ -16,7 +16,6 @@ import vn.doan.lms.domain.Submission;
 @Builder
 public class SubmissionDTO {
     private Long id;
-    private String content;
     private String filePath;
     private LocalDateTime submittedAt;
     private LocalDateTime gradedAt;
@@ -33,7 +32,6 @@ public class SubmissionDTO {
 
     public SubmissionDTO(Submission submission) {
         this.id = submission.getId();
-        this.content = submission.getContent();
         this.filePath = submission.getFilePath();
         this.submittedAt = submission.getSubmittedAt();
         this.gradedAt = submission.getGradedAt();
