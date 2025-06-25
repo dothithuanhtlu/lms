@@ -56,6 +56,7 @@ public class AuthController {
             userLogin.setUserCode(currentUser.getUserCode());
             userLogin.setFullName(currentUser.getFullName());
             userLogin.setEmail(currentUser.getEmail());
+            userLogin.setRoleName(currentUser.getRole().getNameRole());
             res.setUser(userLogin);
         }
         String access_token = this.securityUtil.createAccessToken(authentication.getName(), res.getUser());
@@ -89,6 +90,7 @@ public class AuthController {
             userLogin.setUserCode(currentUser.getUserCode());
             userLogin.setFullName(currentUser.getFullName());
             userLogin.setEmail(currentUser.getEmail());
+            userLogin.setRoleName(currentUser.getRole().getNameRole());
         }
         return ResponseEntity.ok(userLogin);
 
@@ -116,6 +118,7 @@ public class AuthController {
             userLogin.setUserCode(currentUserDB.getUserCode());
             userLogin.setFullName(currentUserDB.getFullName());
             userLogin.setEmail(currentUserDB.getEmail());
+            userLogin.setRoleName(currentUser.getRole().getNameRole());
             res.setUser(userLogin);
         }
         String access_token = this.securityUtil.createAccessToken(userCode, res.getUser());
@@ -144,6 +147,18 @@ public class AuthController {
         if (userCode.equals("")) {
             throw new BadRequestExceptionCustom("Access token is invalid or expired");
         }
+        this.userService.updateUserRefreshToken(null, userCode);
+
+        ResponseCookie deleteCookies = ResponseCookie.from("refreshToken", null)
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .sameSite("Strict")
+                .maxAge(0) // Set max age to 0 to delete the cookie
+                .build();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, deleteCookies.toString())
+                .body(null);
     }
 
 }

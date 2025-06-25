@@ -22,5 +22,6 @@ public class ResLoginDTO {
         private String userCode;
         private String fullName;
         private String email;
+        private String roleName;
     }
 }

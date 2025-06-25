@@ -2,7 +2,9 @@ package vn.doan.lms.controller;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,6 +32,7 @@ import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.service.interfaces.IAssignmentService;
+import vn.doan.lms.util.error.ResourceNotFoundException;
 
 @RestController
 @RequestMapping("/api/assignments")
@@ -74,9 +77,35 @@ public class AssignmentController {
     }
 
     @DeleteMapping("/delete/{assignmentId}")
-    public ResponseEntity<Void> deleteAssignment(@PathVariable("assignmentId") Long assignmentId) {
-        assignmentService.deleteAssignment(assignmentId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String, Object>> deleteAssignment(@PathVariable("assignmentId") Long assignmentId) {
+        try {
+            log.info("🗑️ Received request to delete assignment ID: {}", assignmentId);
+            assignmentService.deleteAssignment(assignmentId);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", null);
+            response.put("message", "Assignment deleted successfully");
+            response.put("data", null);
+
+            log.info("✅ Assignment {} deleted successfully", assignmentId);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            log.warn("⚠️ Assignment not found: {}", e.getMessage());
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "RESOURCE_NOT_FOUND");
+            response.put("message", e.getMessage());
+            response.put("data", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+
+        } catch (Exception e) {
+            log.error("❌ Error deleting assignment {}: {}", assignmentId, e.getMessage(), e);
+            Map<String, Object> response = new HashMap<>();
+            response.put("error", "INTERNAL_SERVER_ERROR");
+            response.put("message", "Failed to delete assignment: " + e.getMessage());
+            response.put("data", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     @GetMapping("/course/{courseId}/count")

@@ -150,11 +150,58 @@ public class AssignmentService implements IAssignmentService {
     }
 
     @Override
+    @Transactional
     public void deleteAssignment(Long assignmentId) {
-        if (!assignmentRepository.existsById(assignmentId)) {
-            throw new ResourceNotFoundException("Assignment not found with id: " + assignmentId);
+        log.info("🗑️ Starting deletion process for assignment ID: {}", assignmentId);
+
+        // 1. Find assignment with all related data
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+
+        try {
+            // 2. Delete all assignment files from Cloudinary
+            String assignmentFolderPath = "lms/assignments/" + assignmentId;
+            log.info("🗂️ Deleting assignment files from Cloudinary folder: {}", assignmentFolderPath);
+
+            boolean assignmentFilesDeleted = cloudinaryService.deleteFolder(assignmentFolderPath);
+            if (assignmentFilesDeleted) {
+                log.info("✅ Assignment files deleted successfully from Cloudinary");
+            } else {
+                log.warn("⚠️ Failed to delete some assignment files from Cloudinary");
+            }
+
+            // 3. Delete all submission files from Cloudinary
+            if (!assignment.getSubmissions().isEmpty()) {
+                log.info("📋 Found {} submissions to delete files for", assignment.getSubmissions().size());
+
+                for (vn.doan.lms.domain.Submission submission : assignment.getSubmissions()) {
+                    String submissionFolderPath = "lms/submissions/" + submission.getId();
+                    log.info("🗂️ Deleting submission files from folder: {}", submissionFolderPath);
+
+                    boolean submissionFilesDeleted = cloudinaryService.deleteFolder(submissionFolderPath);
+                    if (submissionFilesDeleted) {
+                        log.info("✅ Submission {} files deleted successfully", submission.getId());
+                    } else {
+                        log.warn("⚠️ Failed to delete submission {} files", submission.getId());
+                    }
+                }
+            } else {
+                log.info("📋 No submissions found for assignment {}", assignmentId);
+            }
+
+            // 4. Delete assignment from database (cascade will handle documents and
+            // submissions)
+            log.info("🗄️ Deleting assignment from database...");
+            assignmentRepository.deleteById(assignmentId);
+
+            log.info("✅ Assignment {} deleted successfully from database", assignmentId);
+
+        } catch (Exception e) {
+            log.error("❌ Error during assignment deletion process: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to delete assignment: " + e.getMessage(), e);
         }
-        assignmentRepository.deleteById(assignmentId);
+
+        log.info("🎉 Assignment deletion completed successfully for ID: {}", assignmentId);
     }
 
     @Override
