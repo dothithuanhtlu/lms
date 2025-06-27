@@ -1,6 +1,7 @@
 package vn.doan.lms.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,6 +16,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByCourseIdWithStudent(@Param("courseId") Long courseId);
 
     boolean existsByCourseIdAndStudentId(Long courseId, Long studentId);
+
+    Optional<Enrollment> findByCourseIdAndStudentId(Long courseId, Long studentId);
 
     void deleteByStudent_IdAndCourse_Id(Long studentId, Long courseId);
 

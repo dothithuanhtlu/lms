@@ -46,6 +46,10 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
     Page<Submission> findByStudentIdAndAssignmentCourseId(@Param("studentId") Long studentId,
             @Param("courseId") Long courseId, Pageable pageable);
 
+    @Query("SELECT s FROM Submission s WHERE s.student.id = :studentId AND s.assignment.course.id = :courseId")
+    List<Submission> findByStudentIdAndAssignmentCourseId(@Param("studentId") Long studentId,
+            @Param("courseId") Long courseId);
+
     boolean existsByAssignmentIdAndStudentId(Long assignmentId, Long studentId);
 
     long countByAssignmentId(Long assignmentId);

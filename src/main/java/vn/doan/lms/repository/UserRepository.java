@@ -87,4 +87,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         @Param("p_create_by") String createBy,
                         @Param("p_result") Integer result);
 
+        /**
+         * Count students enrolled in a specific course
+         * 
+         * @param courseId the ID of the course
+         * @return the number of students enrolled in the course
+         */
+        @Query("SELECT COUNT(DISTINCT u) FROM User u " +
+                        "JOIN Enrollment e ON u.id = e.student.id " +
+                        "WHERE e.course.id = :courseId AND u.role.nameRole = 'STUDENT'")
+        Long countStudentsByCourseId(@Param("courseId") Long courseId);
 }

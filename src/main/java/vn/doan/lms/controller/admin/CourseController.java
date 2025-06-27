@@ -1,11 +1,13 @@
 package vn.doan.lms.controller.admin;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.dto.CourseCreateDTO;
 import vn.doan.lms.domain.dto.CourseDTO;
 import vn.doan.lms.domain.dto.CourseDTOInfo;
 import vn.doan.lms.domain.dto.CourseDetailDTO;
 import vn.doan.lms.domain.dto.CourseFullDetailDTO;
+import vn.doan.lms.domain.dto.StudentCourseDetailDTO;
 import vn.doan.lms.service.implements_class.CourseService;
 
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +30,7 @@ import jakarta.validation.Valid;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/admin")
+@Slf4j
 public class CourseController {
     @Autowired
     private final CourseService courseService;
@@ -78,6 +82,27 @@ public class CourseController {
     @GetMapping("/courses/{courseId}/full-details")
     public ResponseEntity<CourseFullDetailDTO> getCourseFullDetails(@PathVariable("courseId") Long courseId) {
         return ResponseEntity.ok(courseService.getCourseFullDetails(courseId));
+    }
+
+    @GetMapping("/student/courses/{courseId}/details")
+    public ResponseEntity<StudentCourseDetailDTO> getStudentCourseDetails(
+            @PathVariable("courseId") Long courseId,
+            Authentication authentication) {
+
+        try {
+            log.info("Getting course details for courseId: {} by student: {}", courseId, authentication.getName());
+
+            String studentUsername = authentication.getName();
+            StudentCourseDetailDTO courseDetails = courseService.getStudentCourseDetails(courseId, studentUsername);
+
+            log.info("Successfully retrieved course details for courseId: {}", courseId);
+            return ResponseEntity.ok(courseDetails);
+
+        } catch (Exception e) {
+            log.error("Error getting course details for courseId: {} by student: {}",
+                    courseId, authentication.getName(), e);
+            throw e;
+        }
     }
 
 }

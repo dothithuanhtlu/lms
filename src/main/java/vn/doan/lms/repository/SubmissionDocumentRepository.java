@@ -13,4 +13,6 @@ public interface SubmissionDocumentRepository extends JpaRepository<SubmissionDo
     List<SubmissionDocument> findBySubmissionId(Long submissionId);
 
     void deleteBySubmissionId(Long submissionId);
+
+    int countBySubmissionId(Long submissionId);
 }

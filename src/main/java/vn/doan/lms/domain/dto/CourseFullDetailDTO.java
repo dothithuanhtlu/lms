@@ -75,6 +75,7 @@ public class CourseFullDetailDTO {
                             .enrollmentStatus(enrollment.getStatus())
                             .midtermScore(enrollment.getMidtermScore())
                             .finalScore(enrollment.getFinalScore())
+                            .assignmentSubmissions(new java.util.ArrayList<>()) // Will be populated in service
                             .build())
                     .collect(Collectors.toList());
         }
@@ -135,6 +136,7 @@ public class CourseFullDetailDTO {
         private String enrollmentStatus;
         private Float midtermScore;
         private Float finalScore;
+        private List<AssignmentSubmissionStatus> assignmentSubmissions;
     }
 
     @Data
@@ -163,5 +165,18 @@ public class CourseFullDetailDTO {
         private java.time.LocalDateTime dueDate;
         private Boolean isPublished;
         private Integer totalSubmissions;
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AssignmentSubmissionStatus {
+        private Long assignmentId;
+        private String assignmentTitle;
+        private Boolean hasSubmitted;
+        private java.time.LocalDateTime submissionDate;
+        private Float score;
+        private String status; // "SUBMITTED", "NOT_SUBMITTED", "LATE"
     }
 }

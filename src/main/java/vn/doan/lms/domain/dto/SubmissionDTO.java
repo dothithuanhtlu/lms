@@ -21,7 +21,7 @@ public class SubmissionDTO {
     private LocalDateTime gradedAt;
     private Float score;
     private String feedback;
-    private String status; // SUBMITTED, GRADED, RETURNED, LATE
+    private String status; // SUBMITTED, LATE, NOT_SUBMITTED
     private Boolean isLate;
     private Long assignmentId;
     private String assignmentTitle;
@@ -45,8 +45,9 @@ public class SubmissionDTO {
         this.studentCode = submission.getStudent().getUserCode();
         this.studentName = submission.getStudent().getFullName();
 
-        if (submission.getGradedBy() != null) {
-            this.gradedByName = submission.getGradedBy().getFullName();
+        // Get graded by info from assignment teacher (since gradedBy field was removed)
+        if (submission.getGradedAt() != null) {
+            this.gradedByName = submission.getAssignment().getCourse().getTeacher().getFullName();
         }
     }
 }

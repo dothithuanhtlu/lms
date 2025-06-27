@@ -27,10 +27,11 @@ import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentCommentDTO;
 import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentDTO;
-import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
 import vn.doan.lms.domain.dto.Meta;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
+import vn.doan.lms.domain.dto.UpdateAssignmentInfoRequest;
+import vn.doan.lms.domain.dto.UpdateAssignmentWithFilesRequest;
 import vn.doan.lms.repository.AssignmentCommentRepository;
 import vn.doan.lms.repository.AssignmentDocumentRepository;
 import vn.doan.lms.repository.AssignmentRepository;
@@ -101,51 +102,26 @@ public class AssignmentService implements IAssignmentService {
 
     @Override
     @Transactional
-    public AssignmentDTO updateAssignment(Long assignmentId, AssignmentUpdateDTO updateDTO) {
+    public AssignmentDTO updateAssignment(Long assignmentId, UpdateAssignmentInfoRequest updateDTO) {
+        log.info("📝 Updating assignment info for ID: {}", assignmentId);
+
+        // Find the assignment
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
-        if (updateDTO.getCourseId() != null) {
-            Course course = courseRepository.findById(updateDTO.getCourseId()).orElseThrow(
-                    () -> new ResourceNotFoundException("Course not found with id: " + updateDTO.getCourseId()));
-            assignment.setCourse(course);
-        }
-        List<AssignmentDocument> assignmentDocuments = assignment.getDocuments();
-        if (updateDTO.getFileUploadsNew() != null) {
-            @SuppressWarnings("rawtypes")
-            List<Map> fileUploadResults = cloudinaryService.uploadMultipleFiles(updateDTO.getFileUploadsNew(),
-                    "assignments/" + updateDTO.getTitle() + "/");
-            for (@SuppressWarnings("rawtypes")
-            Map fileUploadResult : fileUploadResults) {
-                String filePath = (String) fileUploadResult.get("secure_url");
-                String originalFileName = (String) fileUploadResult.get("name_file_original");
 
-                // Create and save AssignmentDocument entity
-                AssignmentDocument assignmentDocument = new AssignmentDocument();
-                assignmentDocument.setFileNameOriginal(originalFileName);
-                assignmentDocument.setFilePath(filePath);
-                assignmentDocument.setAssignment(assignment);
-                assignmentDocumentRepository.save(assignmentDocument);
-            }
-        }
-        if (updateDTO.getFileDeleteIds() != null) {
-            for (Long documentId : updateDTO.getFileDeleteIds()) {
-                AssignmentDocument document = assignmentDocumentRepository.findById(documentId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Document not found with id: " + documentId));
-                assignmentDocuments.remove(document);
-                assignmentDocumentRepository.delete(document);
-            }
-        }
-
+        // Update only the information fields (no files involved)
         assignment.setTitle(updateDTO.getTitle());
-        assignment.setDescription(updateDTO.getDescription());
         assignment.setDueDate(updateDTO.getDueDate());
+        assignment.setDescription(updateDTO.getDescription());
         assignment.setMaxScore(updateDTO.getMaxScore());
+        assignment.setIsPublished(updateDTO.getIsPublished() != null ? updateDTO.getIsPublished() : false);
         assignment.setAllowLateSubmission(
                 updateDTO.getAllowLateSubmission() != null ? updateDTO.getAllowLateSubmission() : false);
-        assignment.setIsPublished(updateDTO.getIsPublished() != null ? updateDTO.getIsPublished() : false);
-        assignment.setDocuments(assignmentDocuments);
+        assignment.setUpdatedAt(LocalDateTime.now());
 
+        // Save and return
         Assignment savedAssignment = assignmentRepository.save(assignment);
+        log.info("✅ Assignment info updated successfully for ID: {}", assignmentId);
         return new AssignmentDTO(savedAssignment);
     }
 
@@ -340,4 +316,83 @@ public class AssignmentService implements IAssignmentService {
         log.info("Updated assignment ID: {} - Published status: {}", assignmentId, isPublished);
     }
 
+    @Override
+    @Transactional
+    public AssignmentDTO updateAssignmentWithFiles(Long assignmentId, UpdateAssignmentWithFilesRequest request,
+            MultipartFile[] files) throws IOException {
+        log.info("Updating assignment ID: {} with files", assignmentId);
+
+        // Find existing assignment
+        Assignment existingAssignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+
+        // Step 1: Delete all existing documents and their files from Cloudinary
+        if (existingAssignment.getDocuments() != null && !existingAssignment.getDocuments().isEmpty()) {
+            log.info("Deleting {} existing documents for assignment ID: {}",
+                    existingAssignment.getDocuments().size(), assignmentId);
+
+            // Delete files from Cloudinary using folder approach
+            String folderPath = "lms/assignments/" + assignmentId;
+            boolean deleted = cloudinaryService.deleteFolder(folderPath);
+            if (deleted) {
+                log.info("Successfully deleted assignment folder from Cloudinary: {}", folderPath);
+            } else {
+                log.warn("Failed to delete some files from Cloudinary folder: {}", folderPath);
+            }
+
+            // Delete documents from database
+            assignmentDocumentRepository.deleteAll(existingAssignment.getDocuments());
+            existingAssignment.getDocuments().clear();
+            log.info("Deleted all existing documents from database for assignment ID: {}", assignmentId);
+        }
+
+        // Step 2: Update assignment basic information
+        updateAssignmentBasicInfo(existingAssignment, request);
+
+        // Step 3: Process new files if provided
+        List<AssignmentDocument> newDocuments = new ArrayList<>();
+        if (files != null && files.length > 0) {
+            log.info("Processing {} new files for assignment ID: {}", files.length, assignmentId);
+            newDocuments = processAssignmentFiles(existingAssignment, files, request.getDocumentsMetadata());
+            if (existingAssignment.getDocuments() == null) {
+                existingAssignment.setDocuments(new ArrayList<>());
+            }
+            existingAssignment.getDocuments().addAll(newDocuments);
+        }
+
+        // Step 4: Save updated assignment
+        Assignment savedAssignment = assignmentRepository.save(existingAssignment);
+
+        log.info("Successfully updated assignment ID: {} with {} new documents", assignmentId, newDocuments.size());
+        return new AssignmentDTO(savedAssignment);
+    }
+
+    // Helper method to update basic assignment info
+    private void updateAssignmentBasicInfo(Assignment assignment, UpdateAssignmentWithFilesRequest request) {
+        if (request.getTitle() != null && !request.getTitle().trim().isEmpty()) {
+            assignment.setTitle(request.getTitle());
+        }
+        if (request.getDescription() != null) {
+            assignment.setDescription(request.getDescription());
+        }
+        if (request.getMaxScore() != null) {
+            assignment.setMaxScore(request.getMaxScore());
+        }
+        if (request.getDueDate() != null && !request.getDueDate().trim().isEmpty()) {
+            try {
+                assignment.setDueDate(LocalDateTime.parse(request.getDueDate()));
+            } catch (Exception e) {
+                log.warn("Invalid date format for dueDate: {}, keeping existing value", request.getDueDate());
+            }
+        }
+        if (request.getAllowLateSubmission() != null) {
+            assignment.setAllowLateSubmission(request.getAllowLateSubmission());
+        }
+        if (request.getIsPublished() != null) {
+            assignment.setIsPublished(request.getIsPublished());
+        }
+
+        // Always update timestamp
+        assignment.setUpdatedAt(LocalDateTime.now());
+    }
 }

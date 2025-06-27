@@ -24,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.dto.GradeSubmissionRequest;
 import vn.doan.lms.domain.dto.SubmissionCreateRequest;
 import vn.doan.lms.domain.dto.SubmissionResponse;
+import vn.doan.lms.domain.dto.SubmissionStatistics;
 import vn.doan.lms.service.implements_class.SubmissionService;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 
@@ -163,5 +164,56 @@ public class SubmissionController {
         String username = authentication.getName();
         boolean hasSubmitted = submissionService.hasStudentSubmitted(assignmentId, username);
         return ResponseEntity.ok(hasSubmitted);
+    }
+
+    // Get submission statistics for an assignment (teacher only)
+    @GetMapping("/assignment/{assignmentId}/statistics")
+    public ResponseEntity<SubmissionStatistics> getSubmissionStatistics(
+            @PathVariable("assignmentId") Long assignmentId,
+            Authentication authentication) {
+
+        try {
+            log.info("Getting submission statistics for assignment ID: {}", assignmentId);
+
+            SubmissionStatistics statistics = submissionService.getSubmissionStatistics(assignmentId);
+
+            log.info("Statistics retrieved successfully for assignment ID: {}", assignmentId);
+            return ResponseEntity.ok(statistics);
+
+        } catch (Exception e) {
+            log.error("Error getting submission statistics: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Submit or update assignment submission (unified endpoint)
+     * Automatically determines whether to create new or update existing submission
+     */
+    @PostMapping(value = "/submit-or-update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> submitOrUpdateAssignment(
+            @Valid @ModelAttribute SubmissionCreateRequest request,
+            @RequestParam(value = "files", required = false) MultipartFile[] files,
+            Authentication authentication) {
+
+        try {
+            log.info("Student submitting or updating assignment ID: {} with {} files",
+                    request.getAssignmentId(), files != null ? files.length : 0);
+
+            String username = authentication.getName();
+
+            SubmissionResponse response = submissionService.submitOrUpdateSubmission(request, files, username);
+
+            log.info("Submission processed successfully with ID: {}", response.getId());
+            return ResponseEntity.ok(response);
+
+        } catch (BadRequestExceptionCustom e) {
+            log.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("Error processing submission: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to process submission: " + e.getMessage());
+        }
     }
 }

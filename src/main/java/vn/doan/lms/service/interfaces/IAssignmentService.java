@@ -13,6 +13,8 @@ import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
+import vn.doan.lms.domain.dto.UpdateAssignmentInfoRequest;
+import vn.doan.lms.domain.dto.UpdateAssignmentWithFilesRequest;
 
 public interface IAssignmentService {
 
@@ -26,7 +28,11 @@ public interface IAssignmentService {
         AssignmentDTO createAssignmentWithFiles(CreateAssignmentWithFilesRequest request, MultipartFile[] files)
                         throws IOException;
 
-        AssignmentDTO updateAssignment(Long assignmentId, AssignmentUpdateDTO updateDTO);
+        AssignmentDTO updateAssignment(Long assignmentId, UpdateAssignmentInfoRequest updateDTO);
+
+        // New method for updating assignment with files
+        AssignmentDTO updateAssignmentWithFiles(Long assignmentId, UpdateAssignmentWithFilesRequest request,
+                        MultipartFile[] files) throws IOException;
 
         void deleteAssignment(Long assignmentId);
 

@@ -69,11 +69,7 @@ public class Submission {
     @NotNull(message = "Student mustn't be null")
     private User student;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "graded_by")
-    private User gradedBy;
-
     public enum SubmissionStatus {
-        SUBMITTED, GRADED, RETURNED, LATE
+        NOT_SUBMITTED, SUBMITTED, LATE
     }
 }

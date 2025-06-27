@@ -31,6 +31,8 @@ import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
+import vn.doan.lms.domain.dto.UpdateAssignmentInfoRequest;
+import vn.doan.lms.domain.dto.UpdateAssignmentWithFilesRequest;
 import vn.doan.lms.service.interfaces.IAssignmentService;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
@@ -70,10 +72,32 @@ public class AssignmentController {
     }
 
     @PutMapping("/update/{assignmentId}")
-    public ResponseEntity<AssignmentDTO> updateAssignment(@PathVariable("assignmentId") Long assignmentId,
-            @Valid @ModelAttribute AssignmentUpdateDTO updateDTO) {
-        AssignmentDTO updatedAssignment = assignmentService.updateAssignment(assignmentId, updateDTO);
-        return ResponseEntity.ok(updatedAssignment);
+    public ResponseEntity<?> updateAssignment(@PathVariable("assignmentId") Long assignmentId,
+            @Valid @RequestBody UpdateAssignmentInfoRequest updateRequest) {
+        try {
+            log.info("Updating assignment info for ID: {}", assignmentId);
+
+            AssignmentDTO updatedAssignment = assignmentService.updateAssignment(assignmentId, updateRequest);
+
+            log.info("Assignment info updated successfully for ID: {}", assignmentId);
+            return ResponseEntity.ok(updatedAssignment);
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Assignment not found: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "RESOURCE_NOT_FOUND");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("data", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        } catch (Exception e) {
+            log.error("Error updating assignment info: {}", e.getMessage(), e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "INTERNAL_SERVER_ERROR");
+            errorResponse.put("message", "Failed to update assignment: " + e.getMessage());
+            errorResponse.put("data", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @DeleteMapping("/delete/{assignmentId}")
@@ -159,6 +183,29 @@ public class AssignmentController {
                 request.getTitle(), request.getCourseId(), files != null ? files.length : 0);
     }
 
+    // Validation method for update with files
+    private void validateUpdateWithFilesRequest(UpdateAssignmentWithFilesRequest request, MultipartFile[] files) {
+        if (files != null && files.length > 10) {
+            throw new IllegalArgumentException("Too many files. Maximum 10 files allowed per assignment.");
+        }
+
+        if (files != null) {
+            for (MultipartFile file : files) {
+                if (file.getSize() > 100 * 1024 * 1024) { // 100MB
+                    throw new IllegalArgumentException(
+                            String.format("File '%s' is too large. Maximum 100MB allowed.",
+                                    file.getOriginalFilename()));
+                }
+
+                log.info("Validating file: {} (size: {} bytes, type: {})",
+                        file.getOriginalFilename(), file.getSize(), file.getContentType());
+            }
+        }
+
+        log.info("Update request validation: title={}, files count={}",
+                request.getTitle(), files != null ? files.length : 0);
+    }
+
     @PostMapping(value = "/create-with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> createAssignmentWithFiles(
             @Valid @ModelAttribute CreateAssignmentWithFilesRequest request,
@@ -192,5 +239,48 @@ public class AssignmentController {
             @RequestParam("isPublished") boolean isPublished) {
         assignmentService.updateStatusAssignment(assignmentId, isPublished);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping(value = "/{assignmentId}/update-with-files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateAssignmentWithFiles(
+            @PathVariable("assignmentId") Long assignmentId,
+            @Valid @ModelAttribute UpdateAssignmentWithFilesRequest request,
+            @RequestParam(value = "files", required = false) MultipartFile[] files) {
+
+        try {
+            log.info("Updating assignment ID: {} with files", assignmentId);
+
+            // Validation
+            validateUpdateWithFilesRequest(request, files);
+
+            AssignmentDTO response = assignmentService.updateAssignmentWithFiles(assignmentId, request, files);
+
+            log.info("Assignment updated successfully with ID: {}", assignmentId);
+            return ResponseEntity.ok(response);
+
+        } catch (ResourceNotFoundException e) {
+            log.error("Assignment not found: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "RESOURCE_NOT_FOUND");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("data", null);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+
+        } catch (IllegalArgumentException e) {
+            log.error("Validation error: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "VALIDATION_ERROR");
+            errorResponse.put("message", e.getMessage());
+            errorResponse.put("data", null);
+            return ResponseEntity.badRequest().body(errorResponse);
+
+        } catch (Exception e) {
+            log.error("Unexpected error updating assignment: {}", e.getMessage(), e);
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "INTERNAL_SERVER_ERROR");
+            errorResponse.put("message", "Failed to update assignment: " + e.getMessage());
+            errorResponse.put("data", null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }

@@ -1,28 +1,36 @@
 package vn.doan.lms.service.implements_class;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
+import vn.doan.lms.domain.Assignment;
 import vn.doan.lms.domain.Course;
 import vn.doan.lms.domain.Enrollment;
 import vn.doan.lms.domain.Subject;
+import vn.doan.lms.domain.Submission;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.CourseCreateDTO;
 import vn.doan.lms.domain.dto.CourseDTO;
 import vn.doan.lms.domain.dto.CourseDTOInfo;
 import vn.doan.lms.domain.dto.CourseDetailDTO;
 import vn.doan.lms.domain.dto.CourseFullDetailDTO;
+import vn.doan.lms.domain.dto.StudentCourseDetailDTO;
+import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.repository.CourseRepository;
 import vn.doan.lms.repository.EnrollmentRepository;
 import vn.doan.lms.repository.LessonDocumentRepository;
 import vn.doan.lms.repository.QuestionRepository;
+import vn.doan.lms.repository.SubmissionDocumentRepository;
 import vn.doan.lms.repository.SubmissionRepository;
 import vn.doan.lms.repository.SubjectRepository;
 import vn.doan.lms.repository.UserRepository;
+import vn.doan.lms.service.interfaces.ICourseService;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
@@ -32,8 +40,8 @@ public class CourseService {
     private static final String TEACHER_ROLE = "Teacher";
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
-    private final QuestionRepository questionRepository;
     private final SubmissionRepository submissionRepository;
+    private final SubmissionDocumentRepository submissionDocumentRepository;
     private final LessonDocumentRepository lessonDocumentRepository;
     private final SubjectRepository subjectRepository;
     private final UserRepository userRepository;
@@ -174,8 +182,55 @@ public class CourseService {
             dto.getAssignments().forEach(assignment -> {
                 Long assignmentId = assignment.getId();
                 long submissionCount = submissionRepository.countByAssignmentId(assignmentId);
-
                 assignment.setTotalSubmissions((int) submissionCount);
+            });
+        }
+
+        // Populate student assignment submission status
+        if (dto.getStudents() != null && dto.getAssignments() != null) {
+            dto.getStudents().forEach(student -> {
+                List<CourseFullDetailDTO.AssignmentSubmissionStatus> submissionStatuses = new java.util.ArrayList<>();
+
+                dto.getAssignments().forEach(assignment -> {
+                    Long assignmentId = assignment.getId();
+                    Long studentId = student.getId();
+
+                    // Check if student has submitted this assignment
+                    Optional<vn.doan.lms.domain.Submission> submission = submissionRepository
+                            .findByAssignmentIdAndStudentId(assignmentId, studentId);
+
+                    String status;
+                    java.time.LocalDateTime submissionDate = null;
+                    Float score = null;
+                    boolean hasSubmitted = submission.isPresent();
+
+                    if (hasSubmitted) {
+                        vn.doan.lms.domain.Submission sub = submission.get();
+                        submissionDate = sub.getSubmittedAt();
+                        score = sub.getScore();
+
+                        // Determine status based on submission details
+                        if (submissionDate != null && assignment.getDueDate() != null &&
+                                submissionDate.isAfter(assignment.getDueDate())) {
+                            status = "LATE";
+                        } else {
+                            status = "SUBMITTED";
+                        }
+                    } else {
+                        status = "NOT_SUBMITTED";
+                    }
+
+                    submissionStatuses.add(CourseFullDetailDTO.AssignmentSubmissionStatus.builder()
+                            .assignmentId(assignmentId)
+                            .assignmentTitle(assignment.getTitle())
+                            .hasSubmitted(hasSubmitted)
+                            .submissionDate(submissionDate)
+                            .score(score)
+                            .status(status)
+                            .build());
+                });
+
+                student.setAssignmentSubmissions(submissionStatuses);
             });
         }
 
@@ -192,5 +247,187 @@ public class CourseService {
         return enrollments.stream()
                 .map(enrollment -> new CourseDTO(enrollment.getCourse()))
                 .collect(Collectors.toList());
+    }
+
+    public StudentCourseDetailDTO getStudentCourseDetails(Long courseId, String studentUsername) {
+        // Find the course
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Course not found with id: " + courseId));
+
+        // Find the student by username
+        User student = userRepository.findOneByUserCode(studentUsername);
+        if (student == null) {
+            throw new ResourceNotFoundException("Student not found with username: " + studentUsername);
+        }
+
+        // Verify student is enrolled in the course
+        Enrollment enrollment = enrollmentRepository.findByCourseIdAndStudentId(courseId, student.getId())
+                .orElseThrow(() -> new BadRequestExceptionCustom("Student is not enrolled in this course"));
+
+        // Build basic course info
+        StudentCourseDetailDTO.TeacherInfo teacherInfo = StudentCourseDetailDTO.TeacherInfo.builder()
+                .id(course.getTeacher().getId())
+                .userCode(course.getTeacher().getUserCode())
+                .fullName(course.getTeacher().getFullName())
+                .email(course.getTeacher().getEmail())
+                .build();
+
+        StudentCourseDetailDTO.StudentPersonalInfo studentInfo = StudentCourseDetailDTO.StudentPersonalInfo.builder()
+                .id(student.getId())
+                .userCode(student.getUserCode())
+                .fullName(student.getFullName())
+                .email(student.getEmail())
+                .className(student.getClassRoom() != null ? student.getClassRoom().getClassName() : null)
+                .enrollmentStatus(enrollment.getStatus())
+                .midtermScore(enrollment.getMidtermScore())
+                .finalScore(enrollment.getFinalScore())
+                .build();
+
+        SubjectDTO subjectDTO = SubjectDTO.builder()
+                .id(course.getSubject().getId())
+                .subjectCode(course.getSubject().getSubjectCode())
+                .subjectName(course.getSubject().getSubjectName())
+                .description(course.getSubject().getDescription())
+                .build();
+
+        // Get assignments and student's submission status
+        List<StudentCourseDetailDTO.StudentAssignmentInfo> assignmentInfos = course.getAssignments().stream()
+                .map(assignment -> {
+                    // Find student's submission for this assignment
+                    Optional<Submission> submissionOpt = submissionRepository
+                            .findByAssignmentIdAndStudentId(assignment.getId(), student.getId());
+
+                    StudentCourseDetailDTO.StudentSubmissionInfo submissionInfo;
+                    if (submissionOpt.isPresent()) {
+                        Submission submission = submissionOpt.get();
+
+                        // Get document count
+                        int documentCount = submissionDocumentRepository.countBySubmissionId(submission.getId());
+
+                        // Determine status
+                        String status;
+                        boolean isLate = false;
+
+                        if (submission.getSubmittedAt() != null && assignment.getDueDate() != null &&
+                                submission.getSubmittedAt().isAfter(assignment.getDueDate())) {
+                            status = "LATE";
+                            isLate = true;
+                        } else {
+                            status = "SUBMITTED";
+                        }
+
+                        // Check if student can edit/delete (typically not allowed after grading or if
+                        // late submissions are not allowed)
+                        boolean canEdit = submission.getScore() == null &&
+                                (assignment.getAllowLateSubmission() ||
+                                        assignment.getDueDate() == null ||
+                                        LocalDateTime.now().isBefore(assignment.getDueDate()));
+
+                        boolean canDelete = canEdit; // Same logic for delete
+
+                        submissionInfo = StudentCourseDetailDTO.StudentSubmissionInfo.builder()
+                                .submissionId(submission.getId())
+                                .hasSubmitted(true)
+                                .submissionDate(
+                                        submission.getSubmittedAt() != null ? submission.getSubmittedAt().toString()
+                                                : null)
+                                .score(submission.getScore())
+                                .feedback(submission.getFeedback())
+                                .status(status)
+                                .isLate(isLate)
+                                .canEdit(canEdit)
+                                .canDelete(canDelete)
+                                .documentCount(documentCount)
+                                .build();
+                    } else {
+                        // No submission found
+                        boolean canSubmit = assignment.getDueDate() == null ||
+                                LocalDateTime.now().isBefore(assignment.getDueDate()) ||
+                                assignment.getAllowLateSubmission();
+
+                        submissionInfo = StudentCourseDetailDTO.StudentSubmissionInfo.builder()
+                                .submissionId(null)
+                                .hasSubmitted(false)
+                                .submissionDate(null)
+                                .score(null)
+                                .feedback(null)
+                                .status("NOT_SUBMITTED")
+                                .isLate(false)
+                                .canEdit(canSubmit)
+                                .canDelete(false)
+                                .documentCount(0)
+                                .build();
+                    }
+
+                    return StudentCourseDetailDTO.StudentAssignmentInfo.builder()
+                            .id(assignment.getId())
+                            .title(assignment.getTitle())
+                            .description(assignment.getDescription())
+                            .maxScore(assignment.getMaxScore())
+                            .dueDate(assignment.getDueDate() != null ? assignment.getDueDate().toString() : null)
+                            .isPublished(assignment.getIsPublished())
+                            .allowLateSubmission(assignment.getAllowLateSubmission())
+                            .submission(submissionInfo)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        // Calculate statistics
+        List<Submission> studentSubmissions = submissionRepository.findByStudentIdAndAssignmentCourseId(student.getId(),
+                courseId);
+
+        int totalAssignments = course.getAssignments().size();
+        int submittedAssignments = (int) studentSubmissions.size();
+        int gradedAssignments = (int) studentSubmissions.stream().filter(s -> s.getScore() != null).count();
+        int lateSubmissions = (int) studentSubmissions.stream()
+                .filter(s -> s.getSubmittedAt() != null &&
+                        course.getAssignments().stream()
+                                .filter(a -> a.getId() == s.getAssignment().getId())
+                                .findFirst()
+                                .map(Assignment::getDueDate)
+                                .map(dueDate -> s.getSubmittedAt().isAfter(dueDate))
+                                .orElse(false))
+                .count();
+
+        Float averageScore = null;
+        if (gradedAssignments > 0) {
+            averageScore = (float) studentSubmissions.stream()
+                    .filter(s -> s.getScore() != null)
+                    .mapToDouble(s -> s.getScore())
+                    .average()
+                    .orElse(0.0);
+        }
+
+        double completionRate = totalAssignments > 0 ? (double) submittedAssignments / totalAssignments * 100 : 0.0;
+
+        StudentCourseDetailDTO.StudentCourseStatistics statistics = StudentCourseDetailDTO.StudentCourseStatistics
+                .builder()
+                .totalAssignments(totalAssignments)
+                .submittedAssignments(submittedAssignments)
+                .gradedAssignments(gradedAssignments)
+                .lateSubmissions(lateSubmissions)
+                .averageScore(averageScore)
+                .completionRate(completionRate)
+                .build();
+
+        // Build final DTO
+        return StudentCourseDetailDTO.builder()
+                .id(course.getId())
+                .courseCode(course.getCourseCode())
+                .courseName(course.getSubject() != null ? course.getSubject().getSubjectName() : null)
+                .description(course.getSubject() != null ? course.getSubject().getDescription() : null)
+                .startDate(course.getStartDate())
+                .endDate(course.getEndDate())
+                .maxStudents(course.getMaxStudents())
+                .currentStudents(course.getEnrollments() != null ? course.getEnrollments().size() : 0)
+                .status(course.getEndDate() != null && course.getEndDate().isBefore(LocalDate.now()) ? "Completed"
+                        : course.getStartDate() != null && course.getStartDate().isAfter(LocalDate.now()) ? "Upcoming"
+                                : "Active")
+                .subject(subjectDTO)
+                .teacher(teacherInfo)
+                .studentInfo(studentInfo)
+                .assignments(assignmentInfos)
+                .statistics(statistics)
+                .build();
     }
 }

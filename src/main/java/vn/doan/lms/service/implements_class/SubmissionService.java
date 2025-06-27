@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,10 +27,12 @@ import vn.doan.lms.domain.dto.GradeSubmissionRequest;
 import vn.doan.lms.domain.dto.SubmissionCreateRequest;
 import vn.doan.lms.domain.dto.SubmissionDocumentResponse;
 import vn.doan.lms.domain.dto.SubmissionResponse;
+import vn.doan.lms.domain.dto.SubmissionStatistics;
 import vn.doan.lms.repository.AssignmentRepository;
 import vn.doan.lms.repository.SubmissionDocumentRepository;
 import vn.doan.lms.repository.SubmissionRepository;
 import vn.doan.lms.repository.UserRepository;
+import vn.doan.lms.service.interfaces.ISubmissionService;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
@@ -37,7 +40,7 @@ import vn.doan.lms.util.error.ResourceNotFoundException;
 @AllArgsConstructor
 @Transactional
 @Slf4j
-public class SubmissionService {
+public class SubmissionService implements ISubmissionService {
 
     private final SubmissionRepository submissionRepository;
     private final SubmissionDocumentRepository submissionDocumentRepository;
@@ -118,7 +121,7 @@ public class SubmissionService {
         }
 
         // 4. Check if submission can be updated (not graded yet)
-        if (submission.getStatus() == SubmissionStatus.GRADED) {
+        if (submission.getScore() != null) {
             throw new BadRequestExceptionCustom("Cannot update a graded submission.");
         } // 5. Update submission timestamp
         submission.setSubmittedAt(LocalDateTime.now()); // Update submission time
@@ -142,22 +145,28 @@ public class SubmissionService {
 
     // ✨ Teacher grade submission
     @Transactional
+    @Override
     public SubmissionResponse gradeSubmission(Long submissionId, GradeSubmissionRequest request, String username) {
         log.info("Grading submission ID: {} by teacher: {}", submissionId, username);
 
         // 1. Get submission
         Submission submission = submissionRepository.findById(submissionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + submissionId)); // 2.
-                                                                                                                    // Get
-                                                                                                                    // teacher
-                                                                                                                    // user
+                .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + submissionId));
+
+        // 2. Get teacher user for validation
         User teacher = userRepository.findOneByUserCode(username);
         if (teacher == null) {
             throw new ResourceNotFoundException("User not found: " + username);
         }
 
-        // 3. Check if score is within assignment max score
+        // 3. Validate teacher permission - only assignment teacher can grade
         Assignment assignment = submission.getAssignment();
+        String assignmentTeacher = assignment.getCourse().getTeacher().getUserCode();
+        if (!assignmentTeacher.equals(username)) {
+            throw new BadRequestExceptionCustom("Only the course teacher can grade this submission");
+        }
+
+        // 4. Check if score is within assignment max score
         if (request.getScore() != null && assignment.getMaxScore() != null &&
                 request.getScore() > assignment.getMaxScore()) {
             throw new BadRequestExceptionCustom(
@@ -165,12 +174,12 @@ public class SubmissionService {
                             request.getScore(), assignment.getMaxScore()));
         }
 
-        // 4. Update submission with grade
+        // 5. Update submission with grade
         submission.setScore(request.getScore());
         submission.setFeedback(request.getFeedback());
-        submission.setStatus(SubmissionStatus.GRADED);
+        // Status remains SUBMITTED or LATE, grading is indicated by score being
+        // non-null
         submission.setGradedAt(LocalDateTime.now());
-        submission.setGradedBy(teacher);
 
         submissionRepository.save(submission);
 
@@ -179,6 +188,7 @@ public class SubmissionService {
     }
 
     // ✨ Get submission by ID
+    @Override
     public SubmissionResponse getSubmissionById(Long submissionId) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + submissionId));
@@ -229,6 +239,7 @@ public class SubmissionService {
 
     // ✨ Delete submission
     @Transactional
+    @Override
     public void deleteSubmission(Long submissionId, String username) {
         Submission submission = submissionRepository.findById(submissionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Submission not found with id: " + submissionId));
@@ -244,7 +255,7 @@ public class SubmissionService {
         }
 
         // Check if submission can be deleted (not graded yet)
-        if (submission.getStatus() == SubmissionStatus.GRADED) {
+        if (submission.getScore() != null) {
             throw new BadRequestExceptionCustom("Cannot delete a graded submission.");
         }
 
@@ -254,8 +265,104 @@ public class SubmissionService {
         // Delete submission
         submissionRepository.delete(submission);
         log.info("Submission deleted: {}", submissionId);
-    } // ✨ Check if student has submitted assignment
+    }
 
+    /**
+     * Get submission statistics for an assignment
+     */
+    @Override
+    public SubmissionStatistics getSubmissionStatistics(Long assignmentId) {
+        log.info("Getting submission statistics for assignment ID: {}", assignmentId);
+
+        // 1. Get assignment and validate
+        Assignment assignment = assignmentRepository.findById(assignmentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
+
+        // 2. Get all submissions for this assignment
+        List<Submission> submissions = submissionRepository.findByAssignmentId(assignmentId);
+
+        // 3. Get total students in the course
+        Long totalStudents = userRepository.countStudentsByCourseId(assignment.getCourse().getId());
+
+        // 4. Calculate basic statistics
+        Long totalSubmissions = (long) submissions.size();
+        Long gradedSubmissions = submissions.stream()
+                .mapToLong(s -> s.getScore() != null ? 1 : 0)
+                .sum();
+        Long ungradedSubmissions = totalSubmissions - gradedSubmissions;
+        Long lateSubmissions = submissions.stream()
+                .mapToLong(s -> Boolean.TRUE.equals(s.getIsLate()) ? 1 : 0)
+                .sum();
+
+        // 5. Calculate score statistics
+        List<Float> scores = submissions.stream()
+                .filter(s -> s.getScore() != null)
+                .map(Submission::getScore)
+                .toList();
+
+        Float averageScore = null;
+        Float highestScore = null;
+        Float lowestScore = null;
+
+        if (!scores.isEmpty()) {
+            averageScore = (float) scores.stream().mapToDouble(Float::doubleValue).average().orElse(0.0);
+            highestScore = scores.stream().max(Float::compareTo).orElse(null);
+            lowestScore = scores.stream().min(Float::compareTo).orElse(null);
+        }
+
+        // 6. Calculate percentages
+        Double submissionRate = totalStudents > 0 ? (totalSubmissions * 100.0) / totalStudents : 0.0;
+        Double gradingRate = totalSubmissions > 0 ? (gradedSubmissions * 100.0) / totalSubmissions : 0.0;
+        Double lateRate = totalSubmissions > 0 ? (lateSubmissions * 100.0) / totalSubmissions : 0.0;
+
+        // 7. Calculate grade distribution
+        Float maxScore = assignment.getMaxScore();
+        Long excellentGrades = 0L;
+        Long goodGrades = 0L;
+        Long averageGrades = 0L;
+        Long belowAverageGrades = 0L;
+
+        if (maxScore != null && maxScore > 0) {
+            for (Float score : scores) {
+                if (score != null) {
+                    double percentage = (score / maxScore) * 100;
+                    if (percentage >= 90)
+                        excellentGrades++;
+                    else if (percentage >= 80)
+                        goodGrades++;
+                    else if (percentage >= 70)
+                        averageGrades++;
+                    else
+                        belowAverageGrades++;
+                }
+            }
+        }
+
+        return SubmissionStatistics.builder()
+                .totalSubmissions(totalSubmissions)
+                .gradedSubmissions(gradedSubmissions)
+                .ungradedSubmissions(ungradedSubmissions)
+                .lateSubmissions(lateSubmissions)
+                .averageScore(averageScore)
+                .highestScore(highestScore)
+                .lowestScore(lowestScore)
+                .assignmentMaxScore(maxScore)
+                .submissionRate(submissionRate)
+                .gradingRate(gradingRate)
+                .lateRate(lateRate)
+                .totalStudentsInCourse(totalStudents)
+                .studentsNotSubmitted(totalStudents - totalSubmissions)
+                .excellentGrades(excellentGrades)
+                .goodGrades(goodGrades)
+                .averageGrades(averageGrades)
+                .belowAverageGrades(belowAverageGrades)
+                .build();
+    }
+
+    /**
+     * Check if a student has submitted for a specific assignment
+     */
+    @Override
     public boolean hasStudentSubmitted(Long assignmentId, String username) {
         User student = userRepository.findOneByUserCode(username);
         if (student == null) {
@@ -384,9 +491,44 @@ public class SubmissionService {
                 .assignmentMaxScore(submission.getAssignment().getMaxScore())
                 .studentId(submission.getStudent().getId()).studentName(submission.getStudent().getFullName())
                 .studentEmail(submission.getStudent().getEmail())
-                .gradedById(submission.getGradedBy() != null ? submission.getGradedBy().getId() : null)
-                .gradedByName(submission.getGradedBy() != null ? submission.getGradedBy().getFullName() : null)
+                .gradedById(
+                        submission.getGradedAt() != null ? submission.getAssignment().getCourse().getTeacher().getId()
+                                : null)
+                .gradedByName(submission.getGradedAt() != null
+                        ? submission.getAssignment().getCourse().getTeacher().getFullName()
+                        : null)
                 .documents(documentResponses)
                 .build();
+    }
+
+    /**
+     * ✨ Submit or update assignment submission (unified method)
+     * Automatically determines whether to create new or update existing submission
+     */
+    @Transactional
+    @Override
+    public SubmissionResponse submitOrUpdateSubmission(SubmissionCreateRequest request, MultipartFile[] files,
+            String username) throws IOException {
+        log.info("Processing submission for assignment ID: {} by user: {}", request.getAssignmentId(), username);
+
+        // 1. Get student user
+        User student = userRepository.findOneByUserCode(username);
+        if (student == null) {
+            throw new ResourceNotFoundException("User not found: " + username);
+        }
+
+        // 2. Check if submission already exists
+        Optional<Submission> existingSubmission = submissionRepository.findByAssignmentIdAndStudentId(
+                request.getAssignmentId(), student.getId());
+
+        if (existingSubmission.isPresent()) {
+            // Update existing submission
+            log.info("Updating existing submission ID: {}", existingSubmission.get().getId());
+            return updateSubmission(existingSubmission.get().getId(), request, files, username);
+        } else {
+            // Create new submission
+            log.info("Creating new submission for assignment ID: {}", request.getAssignmentId());
+            return submitAssignment(request, files, username);
+        }
     }
 }
