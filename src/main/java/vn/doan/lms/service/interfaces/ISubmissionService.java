@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import vn.doan.lms.domain.dto.GradeSubmissionRequest;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.domain.dto.SubmissionCreateRequest;
 import vn.doan.lms.domain.dto.SubmissionResponse;
 import vn.doan.lms.domain.dto.SubmissionStatistics;
@@ -62,9 +63,11 @@ public interface ISubmissionService {
      * Get all submissions for a specific assignment (teacher view)
      * 
      * @param assignmentId ID of the assignment
-     * @return List of SubmissionResponse for all submissions
+     * @param page         Page number for pagination
+     * @param size         Page size for pagination
+     * @return ResultPaginationDTO with SubmissionResponse for all submissions
      */
-    // List<SubmissionResponse> getSubmissionsByAssignment(Long assignmentId);
+    ResultPaginationDTO getSubmissionsByAssignment(Long assignmentId, int page, int size);
 
     /**
      * Get submissions by student for a specific assignment
@@ -73,9 +76,19 @@ public interface ISubmissionService {
      * @param username     Username of the student
      * @return List of SubmissionResponse for student's submissions
      */
-
     // List<SubmissionResponse> getSubmissionsByStudentAndAssignment(Long
     // assignmentId, String username);
+
+    /**
+     * Get submissions by student (with optional course filter)
+     * 
+     * @param username Username of the student
+     * @param courseId Optional course ID to filter by
+     * @param page     Page number for pagination
+     * @param size     Page size for pagination
+     * @return ResultPaginationDTO with SubmissionResponse for student's submissions
+     */
+    ResultPaginationDTO getSubmissionsByStudent(String username, Long courseId, int page, int size);
 
     /**
      * Delete a submission (only if not graded)
@@ -114,4 +127,14 @@ public interface ISubmissionService {
      */
     SubmissionResponse submitOrUpdateSubmission(SubmissionCreateRequest request, MultipartFile[] files, String username)
             throws IOException;
+
+    /**
+     * Get count of unsubmitted assignments that student can still submit
+     * (assignments that are either not due yet OR overdue but allow late
+     * submission)
+     * 
+     * @param studentId ID of the student
+     * @return Count of assignments the student can still submit
+     */
+    long getUnsubmittedAssignmentCountByStudentId(Long studentId);
 }

@@ -3,10 +3,97 @@
 ## 📋 **TỔNG QUAN**
 
 Tài liệu này mô tả chi tiết các API để chấm điểm submission và xem thống kê, bao gồm:
-- API chấm điểm cho giáo viên
-- API thống kê submission theo assignment
-- Validation và error handling
-- Test scenarios và examples
+- ✅ API lấy toàn bộ submissions theo assignment (teacher view)
+- ✅ API chấm điểm cho giáo viên
+- ✅ API thống kê submission theo assignment
+- ✅ Validation và error handling
+- ✅ Test scenarios và examples
+
+---
+
+## 🎯 **0. API XEM TẤT CẢ SUBMISSIONS THEO ASSIGNMENT**
+
+### **0.1. GET /api/submissions/assignment/{assignmentId}**
+
+**Mô tả:** Xem tất cả submissions của sinh viên trong một assignment (chỉ dành cho giáo viên)
+
+**Method:** `GET`
+**URL:** `/api/submissions/assignment/{assignmentId}?current=1&pageSize=10`
+**Authentication:** Required (Bearer Token)
+**Role:** Teacher only
+
+#### **Parameters:**
+- **Path Parameter:**
+  - `assignmentId` (Long): ID của assignment
+- **Query Parameters:**
+  - `current` (int, optional): Số trang hiện tại (default: 1, bắt đầu từ 1)
+  - `pageSize` (int, optional): Kích thước trang (default: 10)
+
+#### **Response Success (200) - ResultPaginationDTO:**
+```json
+{
+  "meta": {
+    "page": 0,
+    "pageSize": 10,
+    "pages": 3,
+    "total": 25
+  },
+  "result": [
+    {
+      "id": 1,
+      "assignmentId": 1,
+      "studentId": 2,
+      "studentName": "Nguyễn Văn A",
+      "studentCode": "SV001",
+      "content": "Nội dung bài làm của sinh viên",
+      "status": "SUBMITTED",
+      "score": 85.5,
+      "feedback": "Bài làm tốt",
+      "submittedAt": "2024-01-15T10:30:00",
+      "gradedAt": "2024-01-16T14:20:00",
+      "documents": [
+        {
+          "id": 1,
+          "fileName": "baitap.pdf",
+          "fileUrl": "https://res.cloudinary.com/.../baitap.pdf",
+          "fileType": "application/pdf",
+          "fileSize": 1024000
+        }
+      ]
+    }
+  ]
+}
+```
+
+#### **Pagination Format:**
+- **meta.page**: Số trang hiện tại (0-based, tức current=1 → page=0)
+- **meta.pageSize**: Kích thước trang
+- **meta.pages**: Tổng số trang
+- **meta.total**: Tổng số phần tử
+- **result**: Mảng dữ liệu submissions cho trang hiện tại
+
+#### **Features:**
+- ✅ Hỗ trợ pagination với format ResultPaginationDTO chuẩn
+- ✅ Sắp xếp theo thời gian nộp bài (mới nhất trước)
+- ✅ Hiển thị đầy đủ thông tin sinh viên và bài nộp
+- ✅ Bao gồm files đính kèm với URL trực tiếp
+- ✅ Hiển thị trạng thái và điểm số (nếu đã chấm)
+- ✅ Tương thích với frontend pagination components
+
+#### **Test Examples:**
+```bash
+# Test mặc định (current=1, pageSize=10)
+curl -X GET "http://localhost:8080/api/submissions/assignment/1" \
+  -H "Authorization: Bearer <teacher_jwt_token>"
+
+# Test phân trang tùy chỉnh (current=1, pageSize=5)
+curl -X GET "http://localhost:8080/api/submissions/assignment/1?current=1&pageSize=5" \
+  -H "Authorization: Bearer <teacher_jwt_token>"
+
+# Test trang 2 (current=2, pageSize=3)
+curl -X GET "http://localhost:8080/api/submissions/assignment/1?current=2&pageSize=3" \
+  -H "Authorization: Bearer <teacher_jwt_token>"
+```
 
 ---
 

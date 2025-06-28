@@ -24,6 +24,8 @@ import vn.doan.lms.domain.SubmissionDocument;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.Submission.SubmissionStatus;
 import vn.doan.lms.domain.dto.GradeSubmissionRequest;
+import vn.doan.lms.domain.dto.Meta;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.domain.dto.SubmissionCreateRequest;
 import vn.doan.lms.domain.dto.SubmissionDocumentResponse;
 import vn.doan.lms.domain.dto.SubmissionResponse;
@@ -198,20 +200,34 @@ public class SubmissionService implements ISubmissionService {
     }
 
     // ✨ Get submissions by assignment (for teacher)
-    public List<SubmissionResponse> getSubmissionsByAssignment(Long assignmentId, int page, int size) {
+    @Override
+    public ResultPaginationDTO getSubmissionsByAssignment(Long assignmentId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("submittedAt").descending());
         Page<Submission> submissions = submissionRepository.findByAssignmentId(assignmentId, pageable);
 
-        return submissions.getContent().stream()
-                .map(submission -> {
-                    List<SubmissionDocument> documents = submissionDocumentRepository
-                            .findBySubmissionId(submission.getId());
-                    return mapToSubmissionResponse(submission, documents);
-                })
-                .toList();
-    } // ✨ Get submissions by student
+        Page<SubmissionResponse> pageSubmissionResponse = submissions.map(submission -> {
+            List<SubmissionDocument> documents = submissionDocumentRepository
+                    .findBySubmissionId(submission.getId());
+            return mapToSubmissionResponse(submission, documents);
+        });
 
-    public List<SubmissionResponse> getSubmissionsByStudent(String username, Long courseId, int page, int size) {
+        // Create metadata
+        Meta meta = new Meta();
+        meta.setPage(pageSubmissionResponse.getNumber());
+        meta.setPageSize(pageSubmissionResponse.getSize());
+        meta.setPages(pageSubmissionResponse.getTotalPages());
+        meta.setTotal(pageSubmissionResponse.getTotalElements());
+
+        // Return ResultPaginationDTO
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(pageSubmissionResponse.getContent());
+        return result;
+    }
+
+    // ✨ Get submissions by student
+    @Override
+    public ResultPaginationDTO getSubmissionsByStudent(String username, Long courseId, int page, int size) {
         User student = userRepository.findOneByUserCode(username);
         if (student == null) {
             throw new ResourceNotFoundException("User not found: " + username);
@@ -228,13 +244,24 @@ public class SubmissionService implements ISubmissionService {
             submissions = submissionRepository.findByStudentId(student.getId(), pageable);
         }
 
-        return submissions.getContent().stream()
-                .map(submission -> {
-                    List<SubmissionDocument> documents = submissionDocumentRepository
-                            .findBySubmissionId(submission.getId());
-                    return mapToSubmissionResponse(submission, documents);
-                })
-                .toList();
+        Page<SubmissionResponse> pageSubmissionResponse = submissions.map(submission -> {
+            List<SubmissionDocument> documents = submissionDocumentRepository
+                    .findBySubmissionId(submission.getId());
+            return mapToSubmissionResponse(submission, documents);
+        });
+
+        // Create metadata
+        Meta meta = new Meta();
+        meta.setPage(pageSubmissionResponse.getNumber());
+        meta.setPageSize(pageSubmissionResponse.getSize());
+        meta.setPages(pageSubmissionResponse.getTotalPages());
+        meta.setTotal(pageSubmissionResponse.getTotalElements());
+
+        // Return ResultPaginationDTO
+        ResultPaginationDTO result = new ResultPaginationDTO();
+        result.setMeta(meta);
+        result.setResult(pageSubmissionResponse.getContent());
+        return result;
     }
 
     // ✨ Delete submission
@@ -373,6 +400,7 @@ public class SubmissionService implements ISubmissionService {
     }
 
     // Helper methods
+    @SuppressWarnings("rawtypes")
     private List<SubmissionDocument> processSubmissionFiles(Submission submission, MultipartFile[] files,
             String documentsMetadata) throws IOException {
 
@@ -531,4 +559,27 @@ public class SubmissionService implements ISubmissionService {
             return submitAssignment(request, files, username);
         }
     }
+
+    /**
+     * Get count of unsubmitted assignments that student can still submit
+     * (assignments that are either not due yet OR overdue but allow late
+     * submission)
+     */
+    @Override
+    public long getUnsubmittedAssignmentCountByStudentId(Long studentId) {
+        log.info("Getting submittable unsubmitted assignment count for student ID: {}", studentId);
+
+        // Validate student exists
+        User student = userRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
+        LocalDateTime now = LocalDateTime.now();
+        long count = assignmentRepository.countUnsubmittedSubmittableAssignmentsByStudentId(studentId, now);
+
+        log.info("Found {} submittable unsubmitted assignments for student: {} ({})",
+                count, student.getFullName(), student.getUserCode());
+
+        return count;
+    }
+
 }

@@ -1,6 +1,6 @@
 package vn.doan.lms.controller;
 
-import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,6 +22,7 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.dto.GradeSubmissionRequest;
+import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.domain.dto.SubmissionCreateRequest;
 import vn.doan.lms.domain.dto.SubmissionResponse;
 import vn.doan.lms.domain.dto.SubmissionStatistics;
@@ -121,26 +122,27 @@ public class SubmissionController {
 
     // Get submissions by assignment (for teacher)
     @GetMapping("/assignment/{assignmentId}")
-    public ResponseEntity<List<SubmissionResponse>> getSubmissionsByAssignment(
+    public ResponseEntity<Object> getSubmissionsByAssignment(
             @PathVariable("assignmentId") Long assignmentId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
+            @RequestParam(name = "current", defaultValue = "1") int currentOptional,
+            @RequestParam(name = "pageSize", defaultValue = "10") int pageSizeOptional) {
 
-        List<SubmissionResponse> submissions = submissionService.getSubmissionsByAssignment(assignmentId, page, size);
+        ResultPaginationDTO submissions = submissionService.getSubmissionsByAssignment(assignmentId,
+                currentOptional - 1, pageSizeOptional);
         return ResponseEntity.ok(submissions);
     }
 
     // Get student's own submissions
     @GetMapping("/my-submissions")
-    public ResponseEntity<List<SubmissionResponse>> getMySubmissions(
-            @RequestParam(required = false) Long courseId,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
+    public ResponseEntity<Object> getMySubmissions(
+            @RequestParam(name = "courseId", required = false) Long courseId,
+            @RequestParam(name = "current", defaultValue = "1") int currentOptional,
+            @RequestParam(name = "pageSize", defaultValue = "10") int pageSizeOptional,
             Authentication authentication) {
 
         String username = authentication.getName();
-        List<SubmissionResponse> submissions = submissionService.getSubmissionsByStudent(username, courseId, page,
-                size);
+        ResultPaginationDTO submissions = submissionService.getSubmissionsByStudent(username, courseId,
+                currentOptional - 1, pageSizeOptional);
         return ResponseEntity.ok(submissions);
     }
 
@@ -214,6 +216,34 @@ public class SubmissionController {
             log.error("Error processing submission: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Failed to process submission: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Get count of unsubmitted assignments that student can still submit
+     * (assignments that are either not due yet OR overdue but allow late
+     * submission)
+     */
+    @GetMapping("/student/{studentId}/unsubmitted-count")
+    public ResponseEntity<?> getUnsubmittedAssignmentCount(
+            @PathVariable("studentId") Long studentId,
+            Authentication authentication) {
+
+        try {
+            log.info("Getting submittable unsubmitted assignment count for student ID: {}", studentId);
+
+            long count = submissionService.getUnsubmittedAssignmentCountByStudentId(studentId);
+
+            log.info("Found {} submittable unsubmitted assignments for student ID: {}", count, studentId);
+            return ResponseEntity.ok(Map.of(
+                    "studentId", studentId,
+                    "unsubmittedCount", count,
+                    "message", String.format("Student has %d assignments that can still be submitted", count)));
+
+        } catch (Exception e) {
+            log.error("Error getting unsubmitted assignment count: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to get unsubmitted assignment count: " + e.getMessage());
         }
     }
 }

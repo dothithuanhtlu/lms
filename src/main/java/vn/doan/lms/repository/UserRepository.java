@@ -97,4 +97,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
                         "JOIN Enrollment e ON u.id = e.student.id " +
                         "WHERE e.course.id = :courseId AND u.role.nameRole = 'STUDENT'")
         Long countStudentsByCourseId(@Param("courseId") Long courseId);
+
+        /**
+         * Get all students enrolled in a specific course
+         * 
+         * @param courseId the ID of the course
+         * @return list of students enrolled in the course
+         */
+        @Query("SELECT DISTINCT u FROM User u " +
+                        "JOIN Enrollment e ON u.id = e.student.id " +
+                        "WHERE e.course.id = :courseId AND u.role.nameRole = 'STUDENT'")
+        List<User> findStudentsByCourseId(@Param("courseId") Long courseId);
 }

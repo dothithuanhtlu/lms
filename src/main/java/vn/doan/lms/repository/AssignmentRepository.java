@@ -49,4 +49,33 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
         long countByCourseId(Long courseId);
 
         long countByCourseIdAndIsPublished(Long courseId, Boolean isPublished);
+
+        /**
+         * Find assignments that are expired and eligible for auto-grading
+         * - Due date has passed
+         * - Does not allow late submission
+         * - Is published
+         */
+        @Query("SELECT a FROM Assignment a WHERE " +
+                        "a.dueDate < :currentTime AND " +
+                        "a.allowLateSubmission = false AND " +
+                        "a.isPublished = true")
+        List<Assignment> findExpiredAssignmentsForAutoGrading(@Param("currentTime") LocalDateTime currentTime);
+
+        /**
+         * Count assignments that student can still submit (unsubmitted but submittable)
+         * - Student is enrolled in the course
+         * - Assignment is published
+         * - Student hasn't submitted yet
+         * - Assignment is either not due yet OR overdue but allows late submission
+         */
+        @Query("SELECT COUNT(a) FROM Assignment a " +
+                        "JOIN a.course.enrollments e " +
+                        "WHERE e.student.id = :studentId " +
+                        "AND a.isPublished = true " +
+                        "AND NOT EXISTS (SELECT s FROM Submission s WHERE s.assignment.id = a.id AND s.student.id = :studentId) "
+                        +
+                        "AND (a.dueDate > :currentTime OR (a.dueDate <= :currentTime AND a.allowLateSubmission = true))")
+        long countUnsubmittedSubmittableAssignmentsByStudentId(@Param("studentId") Long studentId,
+                        @Param("currentTime") LocalDateTime currentTime);
 }
