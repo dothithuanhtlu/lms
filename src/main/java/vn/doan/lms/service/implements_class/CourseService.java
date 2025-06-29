@@ -463,4 +463,16 @@ public class CourseService {
                 .statistics(statistics)
                 .build();
     }
+
+    public void updateStudentScores(Long courseId, Long studentId, Float midtermScore, Float finalScore) {
+        Enrollment enrollment = enrollmentRepository.findByCourseIdAndStudentId(courseId, studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student is not enrolled in this course"));
+        if (midtermScore != null) {
+            enrollment.setMidtermScore(midtermScore);
+        }
+        if (finalScore != null) {
+            enrollment.setFinalScore(finalScore);
+        }
+        enrollmentRepository.save(enrollment);
+    }
 }
