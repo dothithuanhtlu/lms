@@ -372,6 +372,38 @@ public class CourseService {
                 })
                 .collect(Collectors.toList());
 
+        // Get lessons information
+        List<StudentCourseDetailDTO.LessonInfo> lessonInfos = course.getLessons().stream()
+                .filter(lesson -> lesson.getIsPublished()) // Only show published lessons to students
+                .sorted((l1, l2) -> Long.compare(l1.getId(), l2.getId())) // Sort by ID since no lessonOrder field
+                .map(lesson -> {
+                    // Get lesson documents
+                    List<StudentCourseDetailDTO.DocumentInfo> documentInfos = lesson.getDocuments().stream()
+                            .map(document -> StudentCourseDetailDTO.DocumentInfo.builder()
+                                    .id(document.getId())
+                                    .fileName(document.getFileName())
+                                    .fileUrl(document.getFilePath()) // Using filePath as fileUrl
+                                    .fileSize(null) // LessonDocument doesn't have fileSize
+                                    .fileType(document.getDocumentType().name()) // Using enum name
+                                    .uploadedAt(
+                                            document.getCreatedAt() != null ? document.getCreatedAt().toString() : null)
+                                    .build())
+                            .collect(Collectors.toList());
+
+                    return StudentCourseDetailDTO.LessonInfo.builder()
+                            .id(lesson.getId())
+                            .title(lesson.getTitle())
+                            .content(null) // Lesson doesn't have content field
+                            .description(lesson.getDescription())
+                            .lessonOrder(null) // Lesson doesn't have lessonOrder field
+                            .isPublished(lesson.getIsPublished())
+                            .createdAt(lesson.getCreatedAt() != null ? lesson.getCreatedAt().toString() : null)
+                            .updatedAt(lesson.getUpdatedAt() != null ? lesson.getUpdatedAt().toString() : null)
+                            .documents(documentInfos)
+                            .build();
+                })
+                .collect(Collectors.toList());
+
         // Calculate statistics
         List<Submission> studentSubmissions = submissionRepository.findByStudentIdAndAssignmentCourseId(student.getId(),
                 courseId);
@@ -427,6 +459,7 @@ public class CourseService {
                 .teacher(teacherInfo)
                 .studentInfo(studentInfo)
                 .assignments(assignmentInfos)
+                .lessons(lessonInfos)
                 .statistics(statistics)
                 .build();
     }

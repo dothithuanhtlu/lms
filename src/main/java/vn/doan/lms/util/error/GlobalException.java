@@ -203,4 +203,16 @@ public class GlobalException {
         res.setMessage("Required cookie is missing: " + ex.getCookieName());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
+
+    // xử lý lỗi LazyInitializationException
+    @ExceptionHandler(org.hibernate.LazyInitializationException.class)
+    public ResponseEntity<CustomResponse<Object>> handleLazyInitializationException(
+            org.hibernate.LazyInitializationException ex, WebRequest request) {
+        logger.error("Hibernate LazyInitializationException: {}", ex.getMessage(), ex);
+        CustomResponse<Object> res = new CustomResponse<>();
+        res.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        res.setError("Data Access Error");
+        res.setMessage("Unable to access data due to session management issue. Please try again.");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(res);
+    }
 }

@@ -90,13 +90,19 @@ public class SercurityConfiguration {
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
                 // tắt csrf
-                .csrf(c -> c.disable())
-                .authorizeHttpRequests(
-                        authz -> authz
-                                // tất cả các url: /, /login không cần login đều được cho phép truy cập
-                                .requestMatchers("/", "/login", "/auth/refresh").permitAll()
-                                // còn lại đều phải login mới được truy cập
-                                .anyRequest().authenticated())
+                // .csrf(c -> c.disable())
+                // .authorizeHttpRequests(
+                // authz -> authz
+                // // tất cả các url: /, /login không cần login đều được cho phép truy cập
+                // .requestMatchers("/", "/login", "/auth/refresh", "/teacher/**").permitAll()
+                // // còn lại đều phải login mới được truy cập
+                // .anyRequest().authenticated())
+                // return http
+                .csrf(csrf -> csrf.disable())
+                // .cors(Customizer.withDefaults()) // Kích hoạt CORS filter
+                .authorizeHttpRequests(authz -> authz
+                        .requestMatchers("/", "/login", "/auth/refresh", "/teacher/**", "/chatbot/**").permitAll()
+                        .anyRequest().authenticated())
                 // .anyRequest().permitAll())
                 .formLogin(f -> f.disable())
                 .cors(Customizer.withDefaults())

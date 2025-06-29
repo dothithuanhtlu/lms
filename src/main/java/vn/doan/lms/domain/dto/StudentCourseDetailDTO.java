@@ -41,6 +41,9 @@ public class StudentCourseDetailDTO {
     // Assignments with student's submission status
     private List<StudentAssignmentInfo> assignments;
 
+    // Lessons in the course
+    private List<LessonInfo> lessons;
+
     // Course statistics for the student
     private StudentCourseStatistics statistics;
 
@@ -114,6 +117,41 @@ public class StudentCourseDetailDTO {
         private Boolean canEdit; // Can student edit this submission
         private Boolean canDelete; // Can student delete this submission
         private Integer documentCount; // Number of files submitted
+    }
+
+    /**
+     * Lesson information
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class LessonInfo {
+        private Long id;
+        private String title;
+        private String content;
+        private String description;
+        private Integer lessonOrder;
+        private Boolean isPublished;
+        private String createdAt;
+        private String updatedAt;
+        private List<DocumentInfo> documents;
+    }
+
+    /**
+     * Document information
+     */
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class DocumentInfo {
+        private Long id;
+        private String fileName;
+        private String fileUrl;
+        private Long fileSize;
+        private String fileType;
+        private String uploadedAt;
     }
 
     /**
