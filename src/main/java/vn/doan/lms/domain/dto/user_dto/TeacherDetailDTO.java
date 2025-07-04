@@ -49,8 +49,6 @@ public class TeacherDetailDTO {
 
     private String departmentName;
     private String departmentCode;
-    private boolean isHead;
-    private boolean isDeputy;
     private boolean isAdvisor;
 
     public TeacherDetailDTO(User user) {
@@ -63,9 +61,6 @@ public class TeacherDetailDTO {
         this.dateOfBirth = user.getDateOfBirth();
         departmentName = user.getDepartment() != null ? user.getDepartment().getNameDepartment() : null;
         departmentCode = user.getDepartment() != null ? user.getDepartment().getDepartmentCode() : null;
-        // Kiểm tra trưởng/phó khoa
-        this.isHead = user.isDepartmentHead();
-        this.isDeputy = user.isDepartmentDeputy();
 
         // Kiểm tra giáo viên chủ nhiệm
         this.isAdvisor = user.getClassRoom() != null

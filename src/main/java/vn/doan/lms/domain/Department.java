@@ -47,20 +47,8 @@ public class Department {
 
     private String description;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "head_of_department_id", unique = true)
-    private User headOfDepartment;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "deputy_head_of_department_id", unique = true)
-    private User deputyHeadOfDepartment;
-
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<User> users = new ArrayList<>();
-
-    public boolean isUserHeadOrDeputy(User user) {
-        return user.equals(headOfDepartment) || user.equals(deputyHeadOfDepartment);
-    }
 
     @OneToMany(mappedBy = "department", fetch = FetchType.LAZY)
     private List<Major> majors = new ArrayList<>();

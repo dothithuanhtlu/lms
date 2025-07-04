@@ -25,12 +25,10 @@ import vn.doan.lms.domain.dto.SubjectDTO;
 import vn.doan.lms.repository.CourseRepository;
 import vn.doan.lms.repository.EnrollmentRepository;
 import vn.doan.lms.repository.LessonDocumentRepository;
-import vn.doan.lms.repository.QuestionRepository;
 import vn.doan.lms.repository.SubmissionDocumentRepository;
 import vn.doan.lms.repository.SubmissionRepository;
 import vn.doan.lms.repository.SubjectRepository;
 import vn.doan.lms.repository.UserRepository;
-import vn.doan.lms.service.interfaces.ICourseService;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 

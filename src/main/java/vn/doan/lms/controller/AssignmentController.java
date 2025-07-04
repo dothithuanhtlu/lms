@@ -25,7 +25,6 @@ import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
-import vn.doan.lms.domain.dto.AssignmentCommentDTO;
 import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
@@ -143,20 +142,6 @@ public class AssignmentController {
             @RequestParam("isPublished") Boolean isPublished) {
         long count = assignmentService.countPublishedAssignmentsByCourse(courseId, isPublished);
         return ResponseEntity.ok(count);
-    }
-
-    @PostMapping("/add-comment/{assignmentId}")
-    public ResponseEntity<Object> addComment(@PathVariable("assignmentId") Long assignmentId,
-            @Valid @RequestBody AssignmentCommentCreateDTO createDTO) {
-        AssignmentCommentDTO comment = assignmentService.createAssignmentComment(assignmentId, createDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(comment);
-    }
-
-    @GetMapping("/comments/{assignmentId}")
-    public ResponseEntity<List<AssignmentCommentDTO>> getCommentsByAssignmentId(
-            @PathVariable("assignmentId") Long assignmentId) {
-        List<AssignmentCommentDTO> comments = assignmentService.getCommentsByAssignmentId(assignmentId);
-        return ResponseEntity.ok(comments);
     }
 
     private void validateRequest(CreateAssignmentWithFilesRequest request, MultipartFile[] files) {

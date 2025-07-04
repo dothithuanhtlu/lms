@@ -79,29 +79,9 @@ public class User {
     @JoinColumn(name = "class_room_id")
     private ClassRoom classRoom;
 
-    @OneToOne(mappedBy = "headOfDepartment", fetch = FetchType.LAZY)
-    private Department managedDepartmentAsHead;
-
-    @OneToOne(mappedBy = "deputyHeadOfDepartment", fetch = FetchType.LAZY)
-    private Department managedDepartmentAsDeputy;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
-    @OneToMany(mappedBy = "advisor", fetch = FetchType.LAZY)
-    private List<ClassRoom> advisingClasses = new ArrayList<>();
-
-    public boolean isDepartmentHead() {
-        return managedDepartmentAsHead != null;
-    }
-
-    public boolean isDepartmentDeputy() {
-        return managedDepartmentAsDeputy != null;
-    }
-
-    public boolean isAdvisor() {
-        return !advisingClasses.isEmpty();
-    }
 
     // định dạng giờ ở FE, vì ở BE mặc định là GMT+0
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss a", timezone = "GMT+7")

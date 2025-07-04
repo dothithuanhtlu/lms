@@ -7,7 +7,6 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
-import vn.doan.lms.domain.dto.AssignmentCommentDTO;
 import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.AssignmentUpdateDTO;
@@ -41,10 +40,6 @@ public interface IAssignmentService {
         long countAssignmentsByCourse(Long courseId);
 
         long countPublishedAssignmentsByCourse(Long courseId, Boolean isPublished);
-
-        AssignmentCommentDTO createAssignmentComment(Long assignmentId, AssignmentCommentCreateDTO commentDTO);
-
-        List<AssignmentCommentDTO> getCommentsByAssignmentId(Long assignmentId);
 
         void updateStatusAssignment(Long assignmentId, boolean isPublished);
 }

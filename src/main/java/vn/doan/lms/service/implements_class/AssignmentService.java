@@ -19,12 +19,10 @@ import org.springframework.web.multipart.MultipartFile;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.Assignment;
-import vn.doan.lms.domain.AssignmentComment;
 import vn.doan.lms.domain.AssignmentDocument;
 import vn.doan.lms.domain.Course;
 import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
-import vn.doan.lms.domain.dto.AssignmentCommentDTO;
 import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
@@ -32,7 +30,6 @@ import vn.doan.lms.domain.dto.Meta;
 import vn.doan.lms.domain.dto.ResultPaginationDTO;
 import vn.doan.lms.domain.dto.UpdateAssignmentInfoRequest;
 import vn.doan.lms.domain.dto.UpdateAssignmentWithFilesRequest;
-import vn.doan.lms.repository.AssignmentCommentRepository;
 import vn.doan.lms.repository.AssignmentDocumentRepository;
 import vn.doan.lms.repository.AssignmentRepository;
 import vn.doan.lms.repository.CourseRepository;
@@ -51,7 +48,6 @@ public class AssignmentService implements IAssignmentService {
     private final CloudinaryService cloudinaryService;
     private final AssignmentDocumentRepository assignmentDocumentRepository;
     private final UserRepository userRepository;
-    private final AssignmentCommentRepository assignmentCommentRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -195,32 +191,6 @@ public class AssignmentService implements IAssignmentService {
     @Override
     public long countPublishedAssignmentsByCourse(Long courseId, Boolean isPublished) {
         return assignmentRepository.countByCourseIdAndIsPublished(courseId, isPublished);
-    }
-
-    @Override
-    public AssignmentCommentDTO createAssignmentComment(Long assignmentId, AssignmentCommentCreateDTO commentDTO) {
-        Assignment assignment = assignmentRepository.findById(assignmentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
-        String email = SecurityContextHolder.getContext().getAuthentication().getName();
-        if (email.equals("anonymousUser")) {
-            throw new ResourceNotFoundException("User not authenticated");
-        }
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + email));
-        AssignmentComment comment = new AssignmentComment();
-        comment.setContent(commentDTO.getContent());
-        comment.setUser(user);
-        comment.setAssignment(assignment);
-        AssignmentComment savedComment = assignmentCommentRepository.save(comment);
-        return new AssignmentCommentDTO(savedComment);
-    }
-
-    @Override
-    public List<AssignmentCommentDTO> getCommentsByAssignmentId(Long assignmentId) {
-        return assignmentCommentRepository.findByAssignmentId(assignmentId)
-                .stream()
-                .map(AssignmentCommentDTO::new)
-                .toList();
     }
 
     @Override

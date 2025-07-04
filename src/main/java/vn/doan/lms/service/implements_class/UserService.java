@@ -31,6 +31,7 @@ import vn.doan.lms.domain.dto.user_dto.TeacherSelectDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTOCreate;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
+import vn.doan.lms.domain.dto.user_dto.UserUpdateDTO;
 import vn.doan.lms.repository.ClassRoomRepository;
 import vn.doan.lms.repository.DepartmentRepository;
 import vn.doan.lms.repository.RoleRepository;
@@ -226,6 +227,33 @@ public class UserService {
                 .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
                 .className(user.getClassRoom().getClassName())
                 .build();
+    }
+
+    public UserUpdateDTO updateUser(String userCode, UserUpdateDTO userDTOCreate) {
+        User user = userRepository.findOneByUserCode(userCode);
+        if (user == null) {
+            throw new ResourceNotFoundException("User not found with userCode: " + userCode);
+        }
+        // Cập nhật các trường thông tin
+        user.setFullName(userDTOCreate.getFullName());
+        user.setEmail(userDTOCreate.getEmail());
+        user.setDateOfBirth(userDTOCreate.getDateOfBirth());
+        user.setGender(userDTOCreate.getGender());
+        user.setAddress(userDTOCreate.getAddress());
+        user.setPhone(userDTOCreate.getPhone());
+        if (userDTOCreate.getRoleName() != null) {
+            user.setRole(roleRepository.findOneByNameRole(userDTOCreate.getRoleName()));
+        }
+        if (userDTOCreate.getClassName() != null) {
+            user.setClassRoom(classRoomRepository.findByClassName(userDTOCreate.getClassName()));
+        }
+        if (userDTOCreate.getDepartmentName() != null) {
+            user.setDepartment(departmentRepository.findOneByNameDepartment(userDTOCreate.getDepartmentName()));
+        }
+        userRepository.save(user);
+        // Trả về thông tin mới
+        userDTOCreate.setUserCode(user.getUserCode());
+        return userDTOCreate;
     }
 
     public List<StudentDTO> getAllStudents() {

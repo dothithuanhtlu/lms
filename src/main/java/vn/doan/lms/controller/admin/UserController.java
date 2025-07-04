@@ -12,6 +12,7 @@ import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTOCreate;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
+import vn.doan.lms.domain.dto.user_dto.UserUpdateDTO;
 import vn.doan.lms.service.implements_class.UserService;
 import vn.doan.lms.util.error.EmailValidationException;
 import vn.doan.lms.util.error.UserCodeValidationException;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -92,6 +94,14 @@ public class UserController {
     public ResponseEntity<TeacherDTO> getTeacherByUserCode(@PathVariable("userCode") String userCode) {
         TeacherDTO teacher = userService.getTeacherByUserCode(userCode);
         return ResponseEntity.ok(teacher);
+    }
+
+    @PutMapping("/admin/user/{userCode}")
+    public ResponseEntity<UserUpdateDTO> updateUser(
+            @PathVariable("userCode") String userCode,
+            @Valid @RequestBody UserUpdateDTO userDTOUpdate) {
+        UserUpdateDTO updatedUser = this.userService.updateUser(userCode, userDTOUpdate);
+        return ResponseEntity.ok(updatedUser);
     }
 
     @GetMapping("/admin/admin/{userCode}")
