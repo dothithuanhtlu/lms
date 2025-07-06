@@ -34,7 +34,7 @@ public class AutoGradingService {
     @Scheduled(fixedRate = 1800000) // Run every 30 minutes (1800000 ms)
     @Transactional
     public void autoGradeExpiredAssignments() {
-        log.info("🤖 Starting scheduled auto-grading for expired assignments");
+        log.info("Starting scheduled auto-grading for expired assignments");
 
         LocalDateTime now = LocalDateTime.now();
 
@@ -49,7 +49,7 @@ public class AutoGradingService {
         int totalProcessed = 0;
         int totalAssignments = expiredAssignments.size();
 
-        log.info("🎯 Found {} expired assignments to process", totalAssignments);
+        log.info("Found {} expired assignments to process", totalAssignments);
 
         for (Assignment assignment : expiredAssignments) {
             try {
@@ -57,21 +57,21 @@ public class AutoGradingService {
                 totalProcessed += processed;
 
                 if (processed > 0) {
-                    log.info("✅ Auto-graded {} students for assignment: {} (ID: {})",
+                    log.info("Auto-graded {} students for assignment: {} (ID: {})",
                             processed, assignment.getTitle(), assignment.getId());
                 } else {
-                    log.debug("⏭️ No students to auto-grade for assignment: {} (ID: {})",
+                    log.debug("No students to auto-grade for assignment: {} (ID: {})",
                             assignment.getTitle(), assignment.getId());
                 }
 
             } catch (Exception e) {
-                log.error("❌ Error auto-grading assignment ID: {} - {}",
+                log.error("Error auto-grading assignment ID: {} - {}",
                         assignment.getId(), e.getMessage(), e);
             }
         }
 
         if (totalProcessed > 0) {
-            log.info("🎉 Scheduled auto-grading completed. {} students processed across {} assignments",
+            log.info("Scheduled auto-grading completed. {} students processed across {} assignments",
                     totalProcessed, totalAssignments);
         } else {
             log.info("📋 Scheduled auto-grading completed. No new submissions to process");
@@ -102,7 +102,7 @@ public class AutoGradingService {
 
             if (existingSubmission.isEmpty()) {
                 // Student hasn't submitted - create zero-grade submission
-                log.debug("👤 Creating zero submission for student: {} ({})",
+                log.debug("Creating zero submission for student: {} ({})",
                         student.getFullName(), student.getUserCode());
 
                 Submission zeroSubmission = Submission.builder()
@@ -119,10 +119,10 @@ public class AutoGradingService {
                 submissionRepository.save(zeroSubmission);
                 processedCount++;
 
-                log.debug("✅ Zero submission created for student: {} with ID: {}",
+                log.debug("Zero submission created for student: {} with ID: {}",
                         student.getUserCode(), zeroSubmission.getId());
             } else {
-                log.debug("⏭️ Student {} already has submission - skipping", student.getUserCode());
+                log.debug("Student {} already has submission - skipping", student.getUserCode());
             }
         }
 
@@ -151,7 +151,7 @@ public class AutoGradingService {
 
             int processed = processExpiredAssignment(assignment);
             if (processed > 0) {
-                log.info("🎯 Manual auto-grade: {} students processed for assignment ID: {}",
+                log.info("Manual auto-grade: {} students processed for assignment ID: {}",
                         processed, assignmentId);
             }
 
@@ -199,7 +199,7 @@ public class AutoGradingService {
         LocalDateTime now = LocalDateTime.now();
         List<Assignment> eligibleAssignments = assignmentRepository.findExpiredAssignmentsForAutoGrading(now);
 
-        log.info("📊 Auto-grading status: {} assignments eligible for auto-grading", eligibleAssignments.size());
+        log.info("Auto-grading status: {} assignments eligible for auto-grading", eligibleAssignments.size());
 
         for (Assignment assignment : eligibleAssignments) {
             List<User> students = userRepository.findStudentsByCourseId(assignment.getCourse().getId());

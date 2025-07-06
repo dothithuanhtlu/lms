@@ -82,13 +82,13 @@ public class LessonService {
     }
 
     public void deleteLesson(Long lessonId) {
-        log.info("🗑️ Deleting lesson with ID: {}", lessonId);
+        log.info("Deleting lesson with ID: {}", lessonId);
 
         // 1. Get lesson with documents
         Lesson lesson = lessonRepository.findById(lessonId)
                 .orElseThrow(() -> new ResourceNotFoundException("Lesson not found with id: " + lessonId));
 
-        log.info("📚 Found lesson: {} with {} documents", lesson.getTitle(), lesson.getDocuments().size());
+        log.info("Found lesson: {} with {} documents", lesson.getTitle(), lesson.getDocuments().size());
 
         // 2. Delete entire folder from Cloudinary (Primary method)
         String folderPath = "lessons/" + lessonId;
@@ -97,12 +97,12 @@ public class LessonService {
         boolean folderDeleted = cloudinaryService.deleteFolderByPrefix(folderPath);
 
         if (!folderDeleted) {
-            log.warn("⚠️ Prefix deletion failed, trying folder deletion method");
+            log.warn("Prefix deletion failed, trying folder deletion method");
             folderDeleted = cloudinaryService.deleteFolder(folderPath);
         }
 
         if (!folderDeleted) {
-            log.warn("⚠️ Both Cloudinary deletion methods failed, trying individual file deletion");
+            log.warn("Both Cloudinary deletion methods failed, trying individual file deletion");
 
             // 3. Fallback: Delete individual files from Cloudinary
             if (lesson.getDocuments() != null && !lesson.getDocuments().isEmpty()) {
@@ -113,7 +113,7 @@ public class LessonService {
                             cloudinaryService.deleteFile(publicId, document.getResourceType());
                         }
                     } catch (Exception e) {
-                        log.warn("⚠️ Failed to delete individual file: {} - {}", document.getFileName(),
+                        log.warn("Failed to delete individual file: {} - {}", document.getFileName(),
                                 e.getMessage());
                     }
                 }
@@ -122,10 +122,10 @@ public class LessonService {
 
         // 4. Delete lesson from database (CASCADE will delete documents)
         lessonRepository.delete(lesson);
-        log.info("✅ Successfully deleted lesson {} from database", lessonId);
+        log.info("Successfully deleted lesson {} from database", lessonId);
 
         // 5. Final verification log
-        log.info("✅ Lesson deletion completed - ID: {}, Title: {}, Cloudinary folder: {}",
+        log.info("Lesson deletion completed - ID: {}, Title: {}, Cloudinary folder: {}",
                 lessonId, lesson.getTitle(), folderPath);
     }
 
@@ -170,11 +170,11 @@ public class LessonService {
                 result = result.substring(0, lastDot);
             }
 
-            log.debug("🔍 Extracted public ID: {} from URL: {}", result, cloudinaryUrl);
+            log.debug("Extracted public ID: {} from URL: {}", result, cloudinaryUrl);
             return result;
 
         } catch (Exception e) {
-            log.error("❌ Failed to extract public ID from URL: {} - {}", cloudinaryUrl, e.getMessage());
+            log.error("Failed to extract public ID from URL: {} - {}", cloudinaryUrl, e.getMessage());
             return null;
         }
     }

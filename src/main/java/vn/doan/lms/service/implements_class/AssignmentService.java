@@ -47,7 +47,6 @@ public class AssignmentService implements IAssignmentService {
     private final CourseRepository courseRepository;
     private final CloudinaryService cloudinaryService;
     private final AssignmentDocumentRepository assignmentDocumentRepository;
-    private final UserRepository userRepository;
     private final ModelMapper modelMapper;
 
     @Override
@@ -99,8 +98,9 @@ public class AssignmentService implements IAssignmentService {
     @Override
     @Transactional
     public AssignmentDTO updateAssignment(Long assignmentId, UpdateAssignmentInfoRequest updateDTO) {
-        log.info("📝 Updating assignment info for ID: {}", assignmentId);
-
+        if (this.assignmentRepository.existsById(assignmentId) == false) {
+            throw new ResourceNotFoundException("Assignment not found with id: " + assignmentId);
+        }
         // Find the assignment
         Assignment assignment = assignmentRepository.findById(assignmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Assignment not found with id: " + assignmentId));
@@ -117,7 +117,6 @@ public class AssignmentService implements IAssignmentService {
 
         // Save and return
         Assignment savedAssignment = assignmentRepository.save(assignment);
-        log.info("✅ Assignment info updated successfully for ID: {}", assignmentId);
         return new AssignmentDTO(savedAssignment);
     }
 
@@ -133,28 +132,28 @@ public class AssignmentService implements IAssignmentService {
         try {
             // 2. Delete all assignment files from Cloudinary
             String assignmentFolderPath = "lms/assignments/" + assignmentId;
-            log.info("🗂️ Deleting assignment files from Cloudinary folder: {}", assignmentFolderPath);
+            log.info("Deleting assignment files from Cloudinary folder: {}", assignmentFolderPath);
 
             boolean assignmentFilesDeleted = cloudinaryService.deleteFolder(assignmentFolderPath);
             if (assignmentFilesDeleted) {
-                log.info("✅ Assignment files deleted successfully from Cloudinary");
+                log.info("Assignment files deleted successfully from Cloudinary");
             } else {
-                log.warn("⚠️ Failed to delete some assignment files from Cloudinary");
+                log.warn("Failed to delete some assignment files from Cloudinary");
             }
 
             // 3. Delete all submission files from Cloudinary
             if (!assignment.getSubmissions().isEmpty()) {
-                log.info("📋 Found {} submissions to delete files for", assignment.getSubmissions().size());
+                log.info("Found {} submissions to delete files for", assignment.getSubmissions().size());
 
                 for (vn.doan.lms.domain.Submission submission : assignment.getSubmissions()) {
                     String submissionFolderPath = "lms/submissions/" + submission.getId();
-                    log.info("🗂️ Deleting submission files from folder: {}", submissionFolderPath);
+                    log.info("Deleting submission files from folder: {}", submissionFolderPath);
 
                     boolean submissionFilesDeleted = cloudinaryService.deleteFolder(submissionFolderPath);
                     if (submissionFilesDeleted) {
-                        log.info("✅ Submission {} files deleted successfully", submission.getId());
+                        log.info("Submission {} files deleted successfully", submission.getId());
                     } else {
-                        log.warn("⚠️ Failed to delete submission {} files", submission.getId());
+                        log.warn("Failed to delete submission {} files", submission.getId());
                     }
                 }
             } else {
@@ -163,17 +162,17 @@ public class AssignmentService implements IAssignmentService {
 
             // 4. Delete assignment from database (cascade will handle documents and
             // submissions)
-            log.info("🗄️ Deleting assignment from database...");
+            log.info("Deleting assignment from database...");
             assignmentRepository.deleteById(assignmentId);
 
-            log.info("✅ Assignment {} deleted successfully from database", assignmentId);
+            log.info("Assignment {} deleted successfully from database", assignmentId);
 
         } catch (Exception e) {
-            log.error("❌ Error during assignment deletion process: {}", e.getMessage(), e);
+            log.error("Error during assignment deletion process: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to delete assignment: " + e.getMessage(), e);
         }
 
-        log.info("🎉 Assignment deletion completed successfully for ID: {}", assignmentId);
+        log.info("Assignment deletion completed successfully for ID: {}", assignmentId);
     }
 
     @Override
@@ -256,7 +255,7 @@ public class AssignmentService implements IAssignmentService {
 
             if (!uploadResult.containsKey("error")) {
                 String secureUrl = (String) uploadResult.get("secure_url");
-                log.info("✅ File uploaded successfully to Cloudinary: {}", secureUrl);
+                log.info("File uploaded successfully to Cloudinary: {}", secureUrl);
 
                 // Create document entity with available fields only
                 AssignmentDocument document = new AssignmentDocument();
@@ -265,10 +264,10 @@ public class AssignmentService implements IAssignmentService {
                 document.setAssignment(assignment);
 
                 documents.add(assignmentDocumentRepository.save(document));
-                log.info("✅ Document saved to database: {} for assignment ID: {}", document.getFileNameOriginal(),
+                log.info("Document saved to database: {} for assignment ID: {}", document.getFileNameOriginal(),
                         assignment.getId());
             } else {
-                log.error("❌ Failed to upload file: {} - Error: {}", file.getOriginalFilename(),
+                log.error("Failed to upload file: {} - Error: {}", file.getOriginalFilename(),
                         uploadResult.get("message"));
             }
         }

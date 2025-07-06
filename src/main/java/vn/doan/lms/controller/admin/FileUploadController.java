@@ -24,48 +24,6 @@ public class FileUploadController {
         this.cloudinaryService = cloudinaryService;
     }
 
-    // @PostMapping("/upload/file")
-    // public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile
-    // file) throws IOException {
-    // return ResponseEntity.ok(cloudinaryService.uploadFile(file));
-    // }
-
-    // // Upload video (giữ nguyên)
-    // @PostMapping("/upload/video")
-    // public ResponseEntity<?> uploadVideo(@RequestParam("file") MultipartFile
-    // file,
-    // @RequestParam("folder") String folderName) throws IOException {
-    // return ResponseEntity.ok(cloudinaryService.uploadVideo(file, folderName));
-    // }
-
-    // // ✨ THÊM MỚI: Upload document
-    // @PostMapping("/upload/document")
-    // public ResponseEntity<?> uploadDocument(@RequestParam("file") MultipartFile
-    // file,
-    // @RequestParam("folder") String folderName) {
-    // try {
-    // // Validate file type
-    // String fileName = file.getOriginalFilename();
-    // if (fileName == null || !isValidDocumentType(fileName)) {
-    // return ResponseEntity.badRequest()
-    // .body("Invalid file type. Only PDF, DOCX, XLSX files are allowed.");
-    // }
-
-    // // Validate file size (50MB limit for documents)
-    // if (file.getSize() > 50 * 1024 * 1024) {
-    // return ResponseEntity.badRequest()
-    // .body("File size too large. Maximum 50MB allowed for documents.");
-    // }
-
-    // Map result = cloudinaryService.uploadDocument(file, folderName);
-    // return ResponseEntity.ok(result);
-
-    // } catch (IOException e) {
-    // return ResponseEntity.status(500)
-    // .body("Upload failed: " + e.getMessage());
-    // }
-    // }
-
     @PostMapping("/upload")
     public ResponseEntity<?> uploadFiles(@RequestParam("files") MultipartFile[] files,
             @RequestParam(value = "folder", defaultValue = "uploads") String folderName) {

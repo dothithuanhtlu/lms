@@ -180,7 +180,7 @@ public class CloudinaryService {
     // ✨ MAIN DELETE METHOD - Enhanced version with better error handling
     public boolean deleteFolder(String folderPath) {
         try {
-            log.info("🗑️ Starting deletion of Cloudinary folder: {}", folderPath);
+            log.info("Starting deletion of Cloudinary folder: {}", folderPath);
 
             boolean hasErrors = false;
 
@@ -203,23 +203,23 @@ public class CloudinaryService {
             try {
                 Map<String, Object> folderOptions = new HashMap<>();
                 cloudinary.api().deleteFolder(folderPath, folderOptions);
-                log.info("✅ Successfully deleted folder: {}", folderPath);
+                log.info("Successfully deleted folder: {}", folderPath);
             } catch (Exception e) {
-                log.warn("⚠️ Could not delete empty folder: {} - {}", folderPath, e.getMessage());
+                log.warn("Could not delete empty folder: {} - {}", folderPath, e.getMessage());
                 // This is often expected as folder might not exist or already be deleted
                 // Don't treat this as a critical error
             }
 
             if (hasErrors) {
-                log.warn("⚠️ Some resources in folder {} could not be deleted", folderPath);
+                log.warn("Some resources in folder {} could not be deleted", folderPath);
                 return false;
             }
 
-            log.info("✅ All resources in folder {} deleted successfully", folderPath);
+            log.info("All resources in folder {} deleted successfully", folderPath);
             return true;
 
         } catch (Exception e) {
-            log.error("❌ Failed to delete folder: {} - Error: {}", folderPath, e.getMessage(), e);
+            log.error("Failed to delete folder: {} - Error: {}", folderPath, e.getMessage(), e);
             return false;
         }
     }
@@ -229,7 +229,7 @@ public class CloudinaryService {
     @SuppressWarnings("rawtypes")
     private boolean deleteResourcesByType(String folderPath, String resourceType) {
         try {
-            log.info("🔄 Deleting {} resources in folder: {}", resourceType, folderPath);
+            log.info("Deleting {} resources in folder: {}", resourceType, folderPath);
 
             Map<String, Object> options = new HashMap<>();
             options.put("type", "upload");
@@ -245,7 +245,7 @@ public class CloudinaryService {
             List<Map> resources = (List<Map>) result.get("resources");
 
             if (resources != null && !resources.isEmpty()) {
-                log.info("📂 Found {} {} files in folder to delete", resources.size(), resourceType);
+                log.info("Found {} {} files in folder to delete", resources.size(), resourceType);
 
                 // Collect public IDs to delete
                 List<String> publicIds = resources.stream()
@@ -279,27 +279,27 @@ public class CloudinaryService {
                             }
                         }
 
-                        log.info("🗑️ Processed batch of {} {} files", batch.size(), resourceType);
+                        log.info("Processed batch of {} {} files", batch.size(), resourceType);
                     } catch (Exception e) {
-                        log.error("❌ Failed to delete batch of {} files: {}", resourceType, e.getMessage());
+                        log.error("Failed to delete batch of {} files: {}", resourceType, e.getMessage());
                         allDeleted = false;
                     }
                 }
 
                 if (allDeleted) {
-                    log.info("✅ Deleted all {} {} files from folder", publicIds.size(), resourceType);
+                    log.info("Deleted all {} {} files from folder", publicIds.size(), resourceType);
                 } else {
-                    log.warn("⚠️ Some {} files could not be deleted from folder", resourceType);
+                    log.warn("Some {} files could not be deleted from folder", resourceType);
                 }
 
                 return allDeleted;
             } else {
-                log.info("📂 No {} files found in folder: {}", resourceType, folderPath);
+                log.info("No {} files found in folder: {}", resourceType, folderPath);
                 return true; // No files to delete is considered success
             }
 
         } catch (Exception e) {
-            log.error("❌ Failed to delete {} resources in folder {}: {}", resourceType, folderPath, e.getMessage());
+            log.error("Failed to delete {} resources in folder {}: {}", resourceType, folderPath, e.getMessage());
             return false;
         }
     }
@@ -308,7 +308,7 @@ public class CloudinaryService {
     @SuppressWarnings("rawtypes")
     public boolean deleteFile(String publicId, String resourceType) {
         try {
-            log.info("🗑️ Deleting file: {} (type: {})", publicId, resourceType);
+            log.info("Deleting file: {} (type: {})", publicId, resourceType);
 
             Map<String, Object> options = new HashMap<>();
             options.put("type", "upload");
@@ -321,19 +321,19 @@ public class CloudinaryService {
             if (deleted != null && deleted.containsKey(publicId)) {
                 String status = (String) deleted.get(publicId);
                 if ("deleted".equals(status)) {
-                    log.info("✅ File successfully deleted: {}", publicId);
+                    log.info("File successfully deleted: {}", publicId);
                     return true;
                 } else {
-                    log.warn("⚠️ File deletion status: {} for {}", status, publicId);
+                    log.warn("File deletion status: {} for {}", status, publicId);
                     return false;
                 }
             } else {
-                log.warn("⚠️ No deletion status returned for: {}", publicId);
+                log.warn("No deletion status returned for: {}", publicId);
                 return false;
             }
 
         } catch (Exception e) {
-            log.error("❌ Failed to delete file: {} - Error: {}", publicId, e.getMessage());
+            log.error("Failed to delete file: {} - Error: {}", publicId, e.getMessage());
             return false;
         }
     }
@@ -342,7 +342,7 @@ public class CloudinaryService {
     @SuppressWarnings("rawtypes")
     public boolean deleteFolderByPrefix(String folderPath) {
         try {
-            log.info("🗑️ Deleting all resources with prefix: {}", folderPath);
+            log.info("Deleting all resources with prefix: {}", folderPath);
 
             // Delete by prefix for each resource type
             String[] resourceTypes = { "raw", "image", "video" };
@@ -355,17 +355,17 @@ public class CloudinaryService {
 
                     // Use prefix to delete all resources starting with folderPath
                     cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
-                    log.info("✅ Deleted {} resources with prefix: {}", resourceType, folderPath);
+                    log.info("Deleted {} resources with prefix: {}", resourceType, folderPath);
 
                 } catch (Exception e) {
-                    log.warn("⚠️ No {} resources found with prefix: {} - {}", resourceType, folderPath, e.getMessage());
+                    log.warn("No {} resources found with prefix: {} - {}", resourceType, folderPath, e.getMessage());
                 }
             }
 
             return true;
 
         } catch (Exception e) {
-            log.error("❌ Failed to delete resources by prefix: {} - {}", folderPath, e.getMessage());
+            log.error("Failed to delete resources by prefix: {} - {}", folderPath, e.getMessage());
             return false;
         }
     }

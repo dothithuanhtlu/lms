@@ -39,10 +39,8 @@ import vn.doan.lms.repository.UserRepository;
 import vn.doan.lms.util.SecurityUtil;
 import vn.doan.lms.util.error.BadRequestExceptionCustom;
 import vn.doan.lms.util.error.ConflictExceptionCustom;
-import vn.doan.lms.util.error.EmailValidationException;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 import vn.doan.lms.util.error.StoredProcedureFailedException;
-import vn.doan.lms.util.error.UserCodeValidationException;
 
 @Getter
 @Setter
@@ -363,19 +361,6 @@ public class UserService {
         this.userRepository.deleteUserByUserCode(userCode);
     }
 
-    // private StudentDTO convertToStudentDTO(User user) {
-    // return StudentDTO.builder()
-    // .userCode(user.getUserCode())
-    // .fullName(user.getFullName())
-    // .email(user.getEmail())
-    // .dateOfBirth(user.getDateOfBirth())
-    // .gender(user.getGender())
-    // .address(user.getAddress())
-    // .phone(user.getPhone())
-    // .className(user.getClassRoom().getClassName())
-    // .build();
-    // }
-
     public StudentDTO getStudentByUserCode(String userCode) {
         if (!isExistUserCode(userCode)) {
             throw new ResourceNotFoundException("User code is not exists");
@@ -383,30 +368,5 @@ public class UserService {
         return convertToStudentDTO(this.userRepository.findOneByUserCode(userCode));
 
     }
-
-    // private UserDTO convertToUserDTO(User user) {
-    // return UserDTO.builder()
-    // .userCode(user.getUserCode())
-    // .fullName(user.getFullName())
-    // .email(user.getEmail())
-    // .dateOfBirth(user.getDateOfBirth())
-    // .gender(user.getGender())
-    // .address(user.getAddress())
-    // .roleName(user.getRole().getNameRole())
-    // .phone(user.getPhone())
-    // .build();
-    // }
-
-    // public User saveUser(User user) {
-    // return this.userRepository.save(user);
-    // }
-
-    // public void deleteUser(String userCode) {
-    // this.userRepository.deleteUserByUserCode(userCode);
-    // }
-
-    // public boolean isExistUserCode(String userCode) {
-    // return this.userRepository.existsByUserCode(userCode);
-    // }
 
 }

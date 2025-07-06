@@ -116,38 +116,3 @@ public class UserController {
     }
 
 }
-
-// @GetMapping("/users/{userCode}")
-// public ResponseEntity<User> getUserById(@PathVariable("userCode") String
-// userCode) {
-// return ResponseEntity.ok(this.userService.getUserByUserCode(userCode));
-// }
-
-// @PostMapping("/users")
-// public ResponseEntity<User> postMethodName(@RequestBody User user) throws
-// UserCodeValidationException {
-// if (this.userService.isExistUserCode(user.getUserCode())) {
-// throw new IdValidationException("Id already exist!");
-// }
-// user.setPassword(this.passwordEncoder.encode(user.getPassword()));
-// User newUser = this.userService.saveUser(user);
-// return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
-// }
-
-// @DeleteMapping("/users/{id}")
-// public ResponseEntity<String> deleteMethodName(@PathVariable("userCode")
-// String userCode)
-// throws IdValidationException {
-// if (!this.userService.isExistUserCode(userCode)) {
-// throw new IdValidationException("Id not exist!");
-// }
-// this.userService.deleteUser(userCode);
-// return ResponseEntity.ok("Delete successed!");
-// }
-// @PutMapping("/users/{id}")
-// public ResponseEntity<User> putMethodName(@PathVariable String id,
-// @RequestBody String entity) {
-// //TODO: process PUT request
-
-// return null;
-// }
