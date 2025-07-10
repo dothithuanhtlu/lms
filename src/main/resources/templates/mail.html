@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Email Template</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: #f4f4f4;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .email-header {
+      background-color: #2196F3;
+      color: white;
+      text-align: center;
+      padding: 24px 20px;
+    }
+    .email-header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .email-body {
+      padding: 30px 25px;
+      color: #333;
+    }
+    .email-body h2 {
+      color: #2196F3;
+    }
+    .email-body p {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .email-button {
+      display: inline-block;
+      margin-top: 25px;
+      background-color: #2196F3;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+    .email-footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 13px;
+      color: #888;
+    }
+    @media screen and (max-width: 600px) {
+      .email-body {
+        padding: 20px;
+      }
+      .email-button {
+        padding: 10px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="email-container">
+    <div class="email-header">
+      <h1>🎓 University LMS</h1>
+    </div>
+
+    <div class="email-body">
+      <h2>Xin chào, [Tên người nhận]</h2>
+      <p>
+        Cảm ơn bạn đã sử dụng hệ thống quản lý học tập của chúng tôi. Dưới đây là thông tin bạn cần:
+      </p>
+      <ul>
+        <li><strong>Môn học:</strong> Nhập môn lập trình</li>
+        <li><strong>Hạn nộp bài:</strong> 15/07/2025</li>
+        <li><strong>Giảng viên:</strong> ThS. Nguyễn Văn A</li>
+      </ul>
+
+      <p>Nếu bạn cần hỗ trợ, hãy liên hệ với trung tâm hỗ trợ sinh viên.</p>
+
+      <a class="email-button" href="https://lms.example.com/login" target="_blank">Đăng nhập hệ thống</a>
+    </div>
+
+    <div class="email-footer">
+      © 2025 University LMS. All rights reserved.<br>
+      📍 123 Đại học Thủy Lợi, Hà Nội
+    </div>
+  </div>
+
+</body>
+</html>

@@ -2,7 +2,6 @@ package vn.doan.lms.util;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,21 +46,21 @@ public class SecurityUtil {
     public String createAccessToken(String userCode, ResLoginDTO.UserLogin dto) {
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
-        List<String> listAuthority = new ArrayList<String>();
-        listAuthority.add("ROLE_USER_CREATE");
-        listAuthority.add("ROLE_USER_READ");
+
+        // Lấy danh sách quyền dựa trên role name từ enum PermissionRole
+        List<String> listAuthority = PermissionUtil.getPermissionsByRole(dto.getRoleName());
+
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
             .issuedAt(now)
             .expiresAt(validity)
             .subject(userCode)
             .claim("user", dto)
-            .claim("permission", listAuthority)//claim: luu trữ quyền của người dùng
+            .claim("permission", listAuthority) // claim: lưu trữ quyền của người dùng động
             .build();
 
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader, claims)).getTokenValue();
-
     }
 
     public String createRefreshToken(String userCode, ResLoginDTO dto) {

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thông báo tài khoản</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #f4f4f4;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 24px 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .content {
+            padding: 30px 25px;
+            color: #333;
+        }
+
+        .content h2 {
+            color: #4CAF50;
+        }
+
+        .content p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .credentials-box {
+            background-color: #f0f0f0;
+            padding: 15px 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 16px;
+        }
+
+        .credentials-box strong {
+            display: inline-block;
+            width: 100px;
+        }
+
+        .button {
+            display: inline-block;
+            margin-top: 25px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        @media screen and (max-width: 600px) {
+            .content {
+                padding: 20px;
+            }
+
+            .button {
+                padding: 10px 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>🎓 University LMS</h1>
+        </div>
+
+        <div class="content">
+            <h2>Thông báo tài khoản</h2>
+            <p>Xin chào <strong>[Tên người dùng]</strong>,</p>
+            <p>Bạn đã được cấp tài khoản để truy cập vào hệ thống quản lý học tập. Dưới đây là thông tin đăng nhập của
+                bạn:</p>
+
+            <div class="credentials-box">
+                <div><strong>Username:</strong> [username]</div>
+                <div><strong>Password:</strong> [password]</div>
+            </div>
+
+            <p>Hãy đăng nhập và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để bảo mật tài khoản của bạn.</p>
+
+            <a class="button" href="https://lms.example.com/login" target="_blank">Đăng nhập hệ thống</a>
+        </div>
+
+        <div class="footer">
+            © 2025 University LMS. All rights reserved.<br>
+            Liên hệ hỗ trợ: support@lms.example.com
+        </div>
+    </div>
+
+</body>
+
+</html>

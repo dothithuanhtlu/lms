@@ -89,19 +89,10 @@ public class SercurityConfiguration {
     public SecurityFilterChain filterChain(HttpSecurity http,
             CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
         http
-                // tắt csrf
-                // .csrf(c -> c.disable())
-                // .authorizeHttpRequests(
-                // authz -> authz
-                // // tất cả các url: /, /login không cần login đều được cho phép truy cập
-                // .requestMatchers("/", "/login", "/auth/refresh", "/teacher/**").permitAll()
-                // // còn lại đều phải login mới được truy cập
-                // .anyRequest().authenticated())
-                // return http
                 .csrf(csrf -> csrf.disable())
                 // .cors(Customizer.withDefaults()) // Kích hoạt CORS filter
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/login", "/auth/refresh", "/teacher/**", "/chatbot/**").permitAll()
+                        .requestMatchers("/", "/login", "/auth/refresh", "/send-email", "/chatbot/**").permitAll()
                         .anyRequest().authenticated())
                 // .anyRequest().permitAll())
                 .formLogin(f -> f.disable())
@@ -110,10 +101,6 @@ public class SercurityConfiguration {
                 // token từ header của request gửi lên server)
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults())
                         .authenticationEntryPoint(customAuthenticationEntryPoint))
-                // .exceptionHandling(
-                // exceptions -> exceptions
-                // .authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint()) // 401
-                // .accessDeniedHandler(new BearerTokenAccessDeniedHandler())) // 403
 
                 // khai báo sử dụng sstateless thì không sử dụng session
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
