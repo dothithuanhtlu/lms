@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8" />
@@ -99,22 +99,22 @@
 
         <div class="content">
             <h2>Thông báo tài khoản</h2>
-            <p>Xin chào <strong>[Tên người dùng]</strong>,</p>
+            <p>Xin chào <strong th:text="${fullName}">[Tên người dùng]</strong>,</p>
             <p>Bạn đã được cấp tài khoản để truy cập vào hệ thống quản lý học tập. Dưới đây là thông tin đăng nhập của
                 bạn:</p>
 
             <div class="credentials-box">
-                <div><strong>Username:</strong> [username]</div>
-                <div><strong>Password:</strong> [password]</div>
+                <div><strong>Username:</strong> <span th:text="${username}">[username]</span></div>
+                <div><strong>Password:</strong> <span th:text="${password}">[password]</span></div>
             </div>
 
             <p>Hãy đăng nhập và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để bảo mật tài khoản của bạn.</p>
 
-            <a class="button" href="https://lms.example.com/login" target="_blank">Đăng nhập hệ thống</a>
+            <a class="button" th:href="@{https://lms.example.com/login}" target="_blank">Đăng nhập hệ thống</a>
         </div>
 
         <div class="footer">
-            © 2025 University LMS. All rights reserved.<br>
+            © 2025 University LMS. All rights reserved.<br />
             Liên hệ hỗ trợ: support@lms.example.com
         </div>
     </div>

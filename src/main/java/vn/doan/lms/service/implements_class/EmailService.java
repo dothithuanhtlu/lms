@@ -12,6 +12,7 @@ import org.thymeleaf.context.Context;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
+import vn.doan.lms.domain.dto.user_dto.EmailAccountDTO;
 
 @Service
 @AllArgsConstructor
@@ -33,10 +34,17 @@ public class EmailService {
         }
     }
 
-    public void sendEmailFromTemplateSync(String to, String subject, String templateName) {
+    public void sendEmailFromTemplateSync(EmailAccountDTO emailAccountDTO) {
         Context context = new Context();
-        String content = this.templateEngine.process(templateName, context);
-        this.sendEmailSync(to, subject, content, false, true);
+        context.setVariable("fullName", emailAccountDTO.getFullName());
+        context.setVariable("username", emailAccountDTO.getUserCode());
+        context.setVariable("password", emailAccountDTO.getPassword());
+        String to = emailAccountDTO.getEmail();
+        String subject = "Thông tin tài khoản LMS của bạn";
+        String templateName = "mailAccount";
+        String htmlContent = templateEngine.process(templateName, context);
+
+        this.sendEmailSync(to, subject, htmlContent, false, true); // ❌ bạn đang truyền nhầm context ở đây
     }
 
 }

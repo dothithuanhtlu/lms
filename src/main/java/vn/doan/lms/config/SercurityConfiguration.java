@@ -92,7 +92,8 @@ public class SercurityConfiguration {
                 .csrf(csrf -> csrf.disable())
                 // .cors(Customizer.withDefaults()) // Kích hoạt CORS filter
                 .authorizeHttpRequests(authz -> authz
-                        .requestMatchers("/", "/login", "/auth/refresh", "/send-email", "/chatbot/**").permitAll()
+                        .requestMatchers("/", "/login", "/auth/refresh", "/send-email", "/chatbot/**", "/teacher/**")
+                        .permitAll()
                         .anyRequest().authenticated())
                 // .anyRequest().permitAll())
                 .formLogin(f -> f.disable())

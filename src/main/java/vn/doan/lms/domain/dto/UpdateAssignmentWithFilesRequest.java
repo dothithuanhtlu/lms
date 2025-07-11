@@ -1,7 +1,5 @@
 package vn.doan.lms.domain.dto;
 
-import java.time.LocalDateTime;
-
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
