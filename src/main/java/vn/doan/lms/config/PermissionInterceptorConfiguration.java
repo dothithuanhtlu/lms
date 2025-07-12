@@ -35,6 +35,6 @@ public class PermissionInterceptorConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns(
                         "/login",
                         "/swagger-ui/**",
-                        "/v3/api-docs/**", "/send-email");
+                        "/v3/api-docs/**", "/send-email", "/send-email-update");
     }
 }

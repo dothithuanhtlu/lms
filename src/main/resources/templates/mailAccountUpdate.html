@@ -100,16 +100,15 @@
         <div class="content">
             <h2>Thông báo tài khoản</h2>
             <p>Xin chào <strong th:text="${fullName}">[Tên người dùng]</strong>,</p>
-            <p>Bạn đã được cấp tài khoản để truy cập vào hệ thống quản lý học tập. Dưới đây là thông tin đăng nhập của
-                bạn:</p>
+            <p>Bạn đã được cấp tài khoản để truy cập vào hệ thống quản lý học tập tuy nhiên có vài sự thay đổi về quyền
+                của bạn,
+                với username và password giữ nguyên.</p>
 
             <div class="credentials-box">
                 <div><strong>Role:</strong> <span th:text="${role}">[role]</span></div>
-                <div><strong>Username:</strong> <span th:text="${username}">[username]</span></div>
-                <div><strong>Password:</strong> <span th:text="${password}">[password]</span></div>
             </div>
 
-            <p>Hãy đăng nhập và hoàn thành tốt các khóa học với website LMS nhé!</p>
+            <p>Hãy đăng nhập và khám phá quyền mới của mình nhé!</p>
 
             <a class="button" th:href="@{https://lms.example.com/login}" target="_blank">Đăng nhập hệ thống</a>
         </div>

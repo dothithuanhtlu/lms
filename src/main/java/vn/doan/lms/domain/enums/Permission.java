@@ -15,7 +15,7 @@ public enum Permission {
         VIEW_ALL_USERS("VIEW_ALL_USERS", HttpMethod.GET, "/admin/users", "Xem danh sách tất cả người dùng"),
         VIEW_USER_STATISTICS("VIEW_USER_STATISTICS", HttpMethod.GET, "/admin/users/statistics",
                         "Xem thống kê người dùng"),
-        UPDATE_USER("UPDATE_USER", HttpMethod.PUT, "/admin/users/{userCode}", "Cập nhật thông tin người dùng"),
+        UPDATE_USER("UPDATE_USER", HttpMethod.PUT, "/admin/user/{userCode}", "Cập nhật thông tin người dùng"),
         DELETE_USER("DELETE_USER", HttpMethod.DELETE, "/admin/user/{userCode}", "Xóa người dùng"),
 
         // User details by role

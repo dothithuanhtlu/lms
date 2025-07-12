@@ -13,6 +13,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import vn.doan.lms.domain.dto.user_dto.EmailAccountDTO;
+import vn.doan.lms.domain.dto.user_dto.EmailAccounttUpdateDTO;
 
 @Service
 @AllArgsConstructor
@@ -39,12 +40,25 @@ public class EmailService {
         context.setVariable("fullName", emailAccountDTO.getFullName());
         context.setVariable("username", emailAccountDTO.getUserCode());
         context.setVariable("password", emailAccountDTO.getPassword());
+        context.setVariable("role", emailAccountDTO.getRole());
         String to = emailAccountDTO.getEmail();
         String subject = "Thông tin tài khoản LMS của bạn";
         String templateName = "mailAccount";
         String htmlContent = templateEngine.process(templateName, context);
 
-        this.sendEmailSync(to, subject, htmlContent, false, true); // ❌ bạn đang truyền nhầm context ở đây
+        this.sendEmailSync(to, subject, htmlContent, false, true);
+    }
+
+    public void sendEmailFromTemplateUpdateSync(EmailAccounttUpdateDTO emailAccounttUpdateDTO) {
+        Context context = new Context();
+        context.setVariable("fullName", emailAccounttUpdateDTO.getFullName());
+        context.setVariable("role", emailAccounttUpdateDTO.getRole());
+        String to = emailAccounttUpdateDTO.getEmail();
+        String subject = "Thông tin tài khoản LMS của bạn - Cập nhật";
+        String templateName = "mailAccountUpdate";
+        String htmlContent = templateEngine.process(templateName, context);
+
+        this.sendEmailSync(to, subject, htmlContent, false, true);
     }
 
 }
