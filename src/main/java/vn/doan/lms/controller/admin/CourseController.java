@@ -105,13 +105,4 @@ public class CourseController {
         }
     }
 
-    @PutMapping("/courses/{courseId}/students/{studentId}/scores")
-    public ResponseEntity<Void> updateStudentScores(
-            @PathVariable("courseId") Long courseId,
-            @PathVariable("studentId") Long studentId,
-            @RequestBody vn.doan.lms.domain.dto.UpdateStudentScoreRequest request) {
-        courseService.updateStudentScores(courseId, studentId, request.getMidtermScore(), request.getFinalScore());
-        return ResponseEntity.ok().build();
-    }
-
 }

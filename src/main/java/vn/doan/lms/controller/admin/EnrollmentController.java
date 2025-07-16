@@ -10,7 +10,9 @@ import vn.doan.lms.service.implements_class.EnrollmentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
@@ -28,6 +30,16 @@ public class EnrollmentController {
     public ResponseEntity<Void> deleteEnrollment(@RequestBody EnrollmentDelDTO enrollmentDelDTO) {
         this.enrollmentService.deleteEnrollment(enrollmentDelDTO);
         return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/admin/courses/{courseId}/students/{studentId}/scores")
+    public ResponseEntity<Void> updateStudentScores(
+            @PathVariable("courseId") Long courseId,
+            @PathVariable("studentId") Long studentId,
+            @RequestBody vn.doan.lms.domain.dto.UpdateStudentScoreRequest request) {
+        this.enrollmentService.updateStudentScores(courseId, studentId, request.getMidtermScore(),
+                request.getFinalScore());
+        return ResponseEntity.ok().build();
     }
 
 }

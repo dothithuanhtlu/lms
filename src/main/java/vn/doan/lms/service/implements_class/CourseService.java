@@ -426,6 +426,8 @@ public class CourseService {
                     .mapToDouble(s -> s.getScore())
                     .average()
                     .orElse(0.0);
+        } else {
+            averageScore = 0.0f; // No assignments graded
         }
 
         double completionRate = totalAssignments > 0 ? (double) submittedAssignments / totalAssignments * 100 : 0.0;
@@ -460,17 +462,5 @@ public class CourseService {
                 .lessons(lessonInfos)
                 .statistics(statistics)
                 .build();
-    }
-
-    public void updateStudentScores(Long courseId, Long studentId, Float midtermScore, Float finalScore) {
-        Enrollment enrollment = enrollmentRepository.findByCourseIdAndStudentId(courseId, studentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Student is not enrolled in this course"));
-        if (midtermScore != null) {
-            enrollment.setMidtermScore(midtermScore);
-        }
-        if (finalScore != null) {
-            enrollment.setFinalScore(finalScore);
-        }
-        enrollmentRepository.save(enrollment);
     }
 }

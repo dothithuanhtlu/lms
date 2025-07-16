@@ -2,6 +2,8 @@ package vn.doan.lms.domain.enums;
 
 import org.springframework.http.HttpMethod;
 
+import retrofit2.http.DELETE;
+
 /**
  * Enum định nghĩa tất cả các quyền trong hệ thống LMS
  * Mỗi quyền bao gồm: tên, HTTP method, endpoint pattern và mô tả
@@ -50,7 +52,7 @@ public enum Permission {
         VIEW_STUDENT_SCORES("VIEW_STUDENT_SCORES", HttpMethod.GET,
                         "/admin/courses/{courseId}/students/{studentId}/scores",
                         "Xem điểm số sinh viên"),
-        UPDATE_STUDENT_SCORES("UPDATE_STUDENT_SCORES", HttpMethod.POST,
+        UPDATE_STUDENT_SCORES("UPDATE_STUDENT_SCORES", HttpMethod.PUT,
                         "/admin/courses/{courseId}/students/{studentId}/scores", "Cập nhật điểm số sinh viên"),
 
         // ================================
@@ -65,6 +67,7 @@ public enum Permission {
         PUBLISH_LESSON("PUBLISH_LESSON", HttpMethod.PUT, "/api/lessons/{lessonId}/publish", "Xuất bản bài học"),
         UPLOAD_LESSON_DOCUMENTS("UPLOAD_LESSON_DOCUMENTS", HttpMethod.POST, "/api/lesson-documents/upload",
                         "Upload tài liệu bài học"),
+        DELETE_LESSON("DELETE_LESSON", HttpMethod.DELETE, "/api/lessons/{lessonId}", "Xóa bài học"),
 
         // ================================
         // ASSIGNMENT MANAGEMENT PERMISSIONS
@@ -88,7 +91,7 @@ public enum Permission {
         SUBMIT_ASSIGNMENT("SUBMIT_ASSIGNMENT", HttpMethod.POST, "/api/submissions/submit-or-update", "Nộp bài tập"),
         VIEW_ASSIGNMENT_SUBMISSIONS("VIEW_ASSIGNMENT_SUBMISSIONS", HttpMethod.GET,
                         "/api/submissions/assignment/{assignmentId}", "Xem danh sách bài nộp"),
-        GRADE_SUBMISSION("GRADE_SUBMISSION", HttpMethod.POST, "/api/submissions/{submissionId}/grade",
+        GRADE_SUBMISSION("GRADE_SUBMISSION", HttpMethod.PUT, "/api/submissions/{submissionId}/grade",
                         "Chấm điểm bài nộp"),
         VIEW_UNSUBMITTED_COUNT("VIEW_UNSUBMITTED_COUNT", HttpMethod.GET,
                         "/api/submissions/student/{studentId}/unsubmitted-count", "Xem số bài chưa nộp"),

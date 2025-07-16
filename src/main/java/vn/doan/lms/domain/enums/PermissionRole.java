@@ -34,8 +34,6 @@ public enum PermissionRole {
             Permission.VIEW_COURSES_BY_TEACHER,
             Permission.VIEW_COURSES_BY_STUDENT,
             Permission.VIEW_STUDENT_COURSE_DETAILS,
-            Permission.VIEW_STUDENT_SCORES,
-            Permission.UPDATE_STUDENT_SCORES,
 
             // Lesson Management - Full Access
             Permission.CREATE_LESSON,
@@ -107,6 +105,7 @@ public enum PermissionRole {
             Permission.UPDATE_LESSON_WITH_FILES,
             Permission.PUBLISH_LESSON,
             Permission.UPLOAD_LESSON_DOCUMENTS,
+            Permission.DELETE_LESSON,
 
             // Assignment Management - Full Access
             Permission.CREATE_ASSIGNMENT,
