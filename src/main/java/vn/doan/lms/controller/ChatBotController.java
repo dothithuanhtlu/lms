@@ -14,17 +14,25 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "*") // Allow CORS for frontend
 @Slf4j
 public class ChatBotController {
+    // Trợ lý AI được inject tự động bởi Spring thông qua interface LangChain4j
     private final Assistant assistant;
 
+    /**
+     * API GET để gửi câu hỏi cho chatbot và nhận câu trả lời.
+     * 
+     * @param message Câu hỏi người dùng (gửi qua URL)
+     * @return ResponseEntity<String> chứa câu trả lời từ AI
+     */
     @GetMapping("/{message}")
     @Transactional
     public ResponseEntity<String> getTeacher(@PathVariable("message") String message) {
         try {
             log.info("Received message: {}", message);
 
-            // Generate a unique session ID based on request or use a default one
+            // Tạo sessionId duy nhất từ nội dung câu hỏi (có thể thay bằng userId sau này)
             long sessionId = Math.abs(message.hashCode()) % 1000000;
 
+            // Gọi trợ lý AI để xử lý câu hỏi
             String response = assistant.lmsAssistantHelp(message, sessionId);
             log.info("Generated response for session {}: {}", sessionId, response);
 
@@ -36,26 +44,28 @@ public class ChatBotController {
         }
     }
 
-    @PostMapping("/chat")
-    @Transactional(readOnly = true)
-    public ResponseEntity<String> chatWithAssistant(
-            @RequestBody ChatRequest request) {
-        try {
-            log.info("Received chat request: {}", request.getMessage());
+    // @PostMapping("/chat")
+    // @Transactional(readOnly = true)
+    // public ResponseEntity<String> chatWithAssistant(
+    // @RequestBody ChatRequest request) {
+    // try {
+    // log.info("Received chat request: {}", request.getMessage());
 
-            long sessionId = request.getSessionId() != null ? request.getSessionId()
-                    : Math.abs(request.getMessage().hashCode()) % 1000000;
+    // long sessionId = request.getSessionId() != null ? request.getSessionId()
+    // : Math.abs(request.getMessage().hashCode()) % 1000000;
 
-            String response = assistant.lmsAssistantHelp(request.getMessage(), sessionId);
-            log.info("Generated response for session {}: {}", sessionId, response);
+    // String response = assistant.lmsAssistantHelp(request.getMessage(),
+    // sessionId);
+    // log.info("Generated response for session {}: {}", sessionId, response);
 
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            log.error("Error processing chat request: {}", request.getMessage(), e);
-            return ResponseEntity.internalServerError()
-                    .body("Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại sau.");
-        }
-    }
+    // return ResponseEntity.ok(response);
+    // } catch (Exception e) {
+    // log.error("Error processing chat request: {}", request.getMessage(), e);
+    // return ResponseEntity.internalServerError()
+    // .body("Xin lỗi, có lỗi xảy ra khi xử lý yêu cầu của bạn. Vui lòng thử lại
+    // sau.");
+    // }
+    // }
 
     public static class ChatRequest {
         private String message;

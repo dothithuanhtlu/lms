@@ -5,9 +5,23 @@ import dev.langchain4j.service.SystemMessage;
 import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.spring.AiService;
 
-@AiService(chatMemoryProvider = "chatMemoryProvider")
+/**
+ * Interface trợ lý AI sử dụng LangChain4j, định nghĩa hành vi và cấu hình hội
+ * thoại.
+ * 
+ * Dùng annotation để mô tả prompt hệ thống, cấu trúc câu trả lời, ghi nhớ hội
+ * thoại,...
+ */
+@AiService(chatMemoryProvider = "chatMemoryProvider") // Chỉ định provider ghi nhớ hội thoại
 public interface Assistant {
 
+   /**
+    * Phương thức chính xử lý câu hỏi từ người dùng.
+    *
+    * @param message Câu hỏi của người dùng
+    * @param chatId  Mã định danh của session hội thoại (để ghi nhớ)
+    * @return Câu trả lời chi tiết từ AI
+    */
    @SystemMessage("""
              🎓 **Bạn là AI Learning Assistant - Trợ lý học tập thông minh hàng đầu**
 

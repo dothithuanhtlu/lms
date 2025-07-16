@@ -27,65 +27,6 @@ public class CloudinaryService {
         this.cloudinary = cloudinary;
     }
 
-    // // Upload image (giữ nguyên)
-    // public Map uploadFile(MultipartFile file) throws IOException {
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // Map.of());
-    // }
-
-    // // Upload video (giữ nguyên)
-    // public Map uploadVideo(MultipartFile file, String folderName) throws
-    // IOException {
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // ObjectUtils.asMap(
-    // "resource_type", "video",
-    // "folder", folderName));
-    // }
-
-    // // ✨ THÊM MỚI: Upload document (PDF, DOCX, XLSX, etc.)
-    // public Map uploadDocument(MultipartFile file, String folderName) throws
-    // IOException {
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // ObjectUtils.asMap(
-    // "resource_type", "raw", // "raw" cho documents
-    // "folder", folderName,
-    // "use_filename", true, // Giữ tên file gốc
-    // "unique_filename", false // Không tạo tên file unique
-    // ));
-    // }
-
-    // public Map uploadFileAuto(MultipartFile file, String folderName) throws
-    // IOException {
-    // String contentType = file.getContentType();
-
-    // if (contentType != null) {
-    // if (contentType.startsWith("image/")) {
-    // // Image
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // ObjectUtils.asMap(
-    // "resource_type", "image",
-    // "folder", folderName));
-    // } else if (contentType.startsWith("video/")) {
-    // // Video
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // ObjectUtils.asMap(
-    // "resource_type", "video",
-    // "folder", folderName));
-    // } else {
-    // // Document/Raw file
-    // return cloudinary.uploader().upload(file.getBytes(),
-    // ObjectUtils.asMap(
-    // "resource_type", "raw",
-    // "folder", folderName,
-    // "use_filename", true,
-    // "unique_filename", false));
-    // }
-    // }
-
-    // // Default fallback to raw
-    // return uploadDocument(file, folderName);
-    // }
-
     // ✨ MAIN METHOD: Upload single file với auto detection
     public Map uploadFileAuto(MultipartFile file, String folderName) throws IOException {
         String contentType = file.getContentType();
@@ -177,37 +118,25 @@ public class CloudinaryService {
                 fileName.endsWith(".flv") || fileName.endsWith(".webm");
     }
 
-    // ✨ MAIN DELETE METHOD - Enhanced version with better error handling
     public boolean deleteFolder(String folderPath) {
         try {
             log.info("Starting deletion of Cloudinary folder: {}", folderPath);
-
             boolean hasErrors = false;
 
-            // Delete all RAW resources in the folder
-            if (!deleteResourcesByType(folderPath, "raw")) {
+            // Xóa từng loại tài nguyên
+            if (!deleteResourcesByType(folderPath, "raw"))
                 hasErrors = true;
-            }
-
-            // Delete all IMAGE resources in the folder
-            if (!deleteResourcesByType(folderPath, "image")) {
+            if (!deleteResourcesByType(folderPath, "image"))
                 hasErrors = true;
-            }
-
-            // Delete all VIDEO resources in the folder
-            if (!deleteResourcesByType(folderPath, "video")) {
+            if (!deleteResourcesByType(folderPath, "video"))
                 hasErrors = true;
-            }
 
-            // Finally delete the empty folder with proper parameters
+            // Xóa thư mục rỗng
             try {
-                Map<String, Object> folderOptions = new HashMap<>();
-                cloudinary.api().deleteFolder(folderPath, folderOptions);
+                cloudinary.api().deleteFolder(folderPath, new HashMap<>());
                 log.info("Successfully deleted folder: {}", folderPath);
             } catch (Exception e) {
                 log.warn("Could not delete empty folder: {} - {}", folderPath, e.getMessage());
-                // This is often expected as folder might not exist or already be deleted
-                // Don't treat this as a critical error
             }
 
             if (hasErrors) {
@@ -217,156 +146,166 @@ public class CloudinaryService {
 
             log.info("All resources in folder {} deleted successfully", folderPath);
             return true;
-
         } catch (Exception e) {
             log.error("Failed to delete folder: {} - Error: {}", folderPath, e.getMessage(), e);
             return false;
         }
     }
 
-    // ✨ Helper method to delete resources by type - Enhanced with better return
-    // value
+    /**
+     * Xóa tất cả tài nguyên của một loại cụ thể trong thư mục trên Cloudinary
+     * 
+     * @param folderPath   Đường dẫn thư mục cần xóa (VD: "products/123")
+     * @param resourceType Loại tài nguyên ("image", "video" hoặc "raw")
+     * @return true nếu xóa thành công toàn bộ, false nếu có lỗi xảy ra
+     */
     @SuppressWarnings("rawtypes")
     private boolean deleteResourcesByType(String folderPath, String resourceType) {
         try {
-            log.info("Deleting {} resources in folder: {}", resourceType, folderPath);
+            log.info("Bắt đầu xóa {} tài nguyên trong thư mục: {}", resourceType, folderPath);
 
-            Map<String, Object> options = new HashMap<>();
-            options.put("type", "upload");
-            options.put("prefix", folderPath + "/");
-            options.put("max_results", 500); // Maximum results per request
-
+            // 1. LẤY DANH SÁCH TÀI NGUYÊN TỪ CLOUDINARY
+            // Thiết lập các tham số request
             Map result = cloudinary.api().resources(ObjectUtils.asMap(
-                    "type", "upload",
-                    "prefix", folderPath + "/",
-                    "resource_type", resourceType,
-                    "max_results", 500));
+                    "type", "upload", // Chỉ lấy các tài nguyên được upload
+                    "prefix", folderPath + "/", // Lọc theo tiền tố đường dẫn
+                    "resource_type", resourceType, // Loại tài nguyên cần lấy
+                    "max_results", 500)); // Giới hạn tối đa 500 kết quả
 
+            // 2. XỬ LÝ KẾT QUẢ TRẢ VỀ
             List<Map> resources = (List<Map>) result.get("resources");
 
             if (resources != null && !resources.isEmpty()) {
-                log.info("Found {} {} files in folder to delete", resources.size(), resourceType);
+                log.info("Tìm thấy {} {} tài nguyên cần xóa", resources.size(), resourceType);
 
-                // Collect public IDs to delete
+                // 3. TRÍCH XUẤT DANH SÁCH PUBLIC_ID
+                // Mỗi tài nguyên trên Cloudinary có một public_id duy nhất
                 List<String> publicIds = resources.stream()
                         .map(resource -> (String) resource.get("public_id"))
                         .collect(Collectors.toList());
 
-                // Delete resources in batches (Cloudinary has limits)
-                int batchSize = 100;
-                boolean allDeleted = true;
+                // 4. XÓA THEO TỪNG BATCH (NHÓM NHỎ)
+                boolean allDeleted = true; // Cờ kiểm tra toàn bộ quá trình
+                int batchSize = 100; // Cloudinary giới hạn số lượng xóa mỗi lần gọi API
 
                 for (int i = 0; i < publicIds.size(); i += batchSize) {
+                    // 4.1. Tạo batch (nhóm nhỏ) các public_id cần xóa
                     int endIndex = Math.min(i + batchSize, publicIds.size());
                     List<String> batch = publicIds.subList(i, endIndex);
 
-                    Map<String, Object> deleteOptions = new HashMap<>();
-                    deleteOptions.put("type", "upload");
-                    deleteOptions.put("resource_type", resourceType);
-
                     try {
-                        Map deleteResult = cloudinary.api().deleteResources(batch, deleteOptions);
+                        log.debug("Xử lý batch từ {} đến {}", i, endIndex - 1);
 
-                        // Check if all files in batch were deleted successfully
+                        // 4.2. GỌI API XÓA BATCH
+                        Map deleteResult = cloudinary.api().deleteResources(batch,
+                                ObjectUtils.asMap(
+                                        "type", "upload",
+                                        "resource_type", resourceType));
+
+                        // 4.3. KIỂM TRA KẾT QUẢ XÓA
                         Map deleted = (Map) deleteResult.get("deleted");
                         if (deleted != null) {
                             for (String publicId : batch) {
                                 String status = (String) deleted.get(publicId);
                                 if (!"deleted".equals(status)) {
-                                    log.warn("⚠️ File {} deletion status: {}", publicId, status);
+                                    log.warn("Xóa không thành công {} - Trạng thái: {}", publicId, status);
                                     allDeleted = false;
                                 }
                             }
                         }
-
-                        log.info("Processed batch of {} {} files", batch.size(), resourceType);
                     } catch (Exception e) {
-                        log.error("Failed to delete batch of {} files: {}", resourceType, e.getMessage());
+                        log.error("Lỗi khi xóa batch {} tài nguyên: {}", resourceType, e.getMessage());
                         allDeleted = false;
                     }
                 }
 
+                // 5. TRẢ VỀ KẾT QUẢ CUỐI CÙNG
                 if (allDeleted) {
-                    log.info("Deleted all {} {} files from folder", publicIds.size(), resourceType);
+                    log.info("Đã xóa thành công tất cả {} {} tài nguyên", publicIds.size(), resourceType);
                 } else {
-                    log.warn("Some {} files could not be deleted from folder", resourceType);
+                    log.warn("Một số {} tài nguyên chưa được xóa hoàn toàn", resourceType);
                 }
-
                 return allDeleted;
+
             } else {
-                log.info("No {} files found in folder: {}", resourceType, folderPath);
-                return true; // No files to delete is considered success
+                // Trường hợp không có tài nguyên nào
+                log.info("Không tìm thấy {} tài nguyên trong thư mục", resourceType);
+                return true; // Coi như thành công nếu không có gì để xóa
             }
 
         } catch (Exception e) {
-            log.error("Failed to delete {} resources in folder {}: {}", resourceType, folderPath, e.getMessage());
+            // Xử lý các lỗi tổng thể
+            log.error("LỖI HỆ THỐNG khi xóa {} tài nguyên: {}", resourceType, e.getMessage());
             return false;
         }
     }
 
-    // ✨ Delete single file by public ID - IMPROVED
-    @SuppressWarnings("rawtypes")
-    public boolean deleteFile(String publicId, String resourceType) {
-        try {
-            log.info("Deleting file: {} (type: {})", publicId, resourceType);
+    // // ✨ Delete single file by public ID - IMPROVED
+    // @SuppressWarnings("rawtypes")
+    // public boolean deleteFile(String publicId, String resourceType) {
+    // try {
+    // log.info("Deleting file: {} (type: {})", publicId, resourceType);
 
-            Map<String, Object> options = new HashMap<>();
-            options.put("type", "upload");
-            options.put("resource_type", resourceType != null ? resourceType : "raw");
+    // Map<String, Object> options = new HashMap<>();
+    // options.put("type", "upload");
+    // options.put("resource_type", resourceType != null ? resourceType : "raw");
 
-            Map result = cloudinary.api().deleteResources(Arrays.asList(publicId), options);
+    // Map result = cloudinary.api().deleteResources(Arrays.asList(publicId),
+    // options);
 
-            // Check deletion result
-            Map deleted = (Map) result.get("deleted");
-            if (deleted != null && deleted.containsKey(publicId)) {
-                String status = (String) deleted.get(publicId);
-                if ("deleted".equals(status)) {
-                    log.info("File successfully deleted: {}", publicId);
-                    return true;
-                } else {
-                    log.warn("File deletion status: {} for {}", status, publicId);
-                    return false;
-                }
-            } else {
-                log.warn("No deletion status returned for: {}", publicId);
-                return false;
-            }
+    // // Check deletion result
+    // Map deleted = (Map) result.get("deleted");
+    // if (deleted != null && deleted.containsKey(publicId)) {
+    // String status = (String) deleted.get(publicId);
+    // if ("deleted".equals(status)) {
+    // log.info("File successfully deleted: {}", publicId);
+    // return true;
+    // } else {
+    // log.warn("File deletion status: {} for {}", status, publicId);
+    // return false;
+    // }
+    // } else {
+    // log.warn("No deletion status returned for: {}", publicId);
+    // return false;
+    // }
 
-        } catch (Exception e) {
-            log.error("Failed to delete file: {} - Error: {}", publicId, e.getMessage());
-            return false;
-        }
-    }
+    // } catch (Exception e) {
+    // log.error("Failed to delete file: {} - Error: {}", publicId, e.getMessage());
+    // return false;
+    // }
+    // }
 
-    // ✨ ALTERNATIVE: Delete all resources in folder by prefix (Simpler approach)
-    @SuppressWarnings("rawtypes")
-    public boolean deleteFolderByPrefix(String folderPath) {
-        try {
-            log.info("Deleting all resources with prefix: {}", folderPath);
+    // // ✨ ALTERNATIVE: Delete all resources in folder by prefix (Simpler approach)
+    // @SuppressWarnings("rawtypes")
+    // public boolean deleteFolderByPrefix(String folderPath) {
+    // try {
+    // log.info("Deleting all resources with prefix: {}", folderPath);
 
-            // Delete by prefix for each resource type
-            String[] resourceTypes = { "raw", "image", "video" };
+    // // Delete by prefix for each resource type
+    // String[] resourceTypes = { "raw", "image", "video" };
 
-            for (String resourceType : resourceTypes) {
-                try {
-                    Map<String, Object> deleteOptions = new HashMap<>();
-                    deleteOptions.put("type", "upload");
-                    deleteOptions.put("resource_type", resourceType);
+    // for (String resourceType : resourceTypes) {
+    // try {
+    // Map<String, Object> deleteOptions = new HashMap<>();
+    // deleteOptions.put("type", "upload");
+    // deleteOptions.put("resource_type", resourceType);
 
-                    // Use prefix to delete all resources starting with folderPath
-                    cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
-                    log.info("Deleted {} resources with prefix: {}", resourceType, folderPath);
+    // // Use prefix to delete all resources starting with folderPath
+    // cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
+    // log.info("Deleted {} resources with prefix: {}", resourceType, folderPath);
 
-                } catch (Exception e) {
-                    log.warn("No {} resources found with prefix: {} - {}", resourceType, folderPath, e.getMessage());
-                }
-            }
+    // } catch (Exception e) {
+    // log.warn("No {} resources found with prefix: {} - {}", resourceType,
+    // folderPath, e.getMessage());
+    // }
+    // }
 
-            return true;
+    // return true;
 
-        } catch (Exception e) {
-            log.error("Failed to delete resources by prefix: {} - {}", folderPath, e.getMessage());
-            return false;
-        }
-    }
+    // } catch (Exception e) {
+    // log.error("Failed to delete resources by prefix: {} - {}", folderPath,
+    // e.getMessage());
+    // return false;
+    // }
+    // }
 }
