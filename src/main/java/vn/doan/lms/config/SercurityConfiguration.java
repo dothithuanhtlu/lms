@@ -69,6 +69,10 @@ public class SercurityConfiguration {
         };
     }
 
+    /*
+     * Mục đích: Chuyển đổi JWT thành đối tượng Authentication
+     * Quan trọng: Đọc claim "permission" để lấy danh sách quyền
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();

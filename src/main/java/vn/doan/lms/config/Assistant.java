@@ -6,8 +6,8 @@ import dev.langchain4j.service.UserMessage;
 import dev.langchain4j.service.spring.AiService;
 
 /**
- * Interface trợ lý AI sử dụng LangChain4j, định nghĩa hành vi và cấu hình hội
- * thoại.
+ * Interface trợ lý AI sử dụng LangChain4j, Giao diện định nghĩa hành vi của
+ * chatbot AI
  * 
  * Dùng annotation để mô tả prompt hệ thống, cấu trúc câu trả lời, ghi nhớ hội
  * thoại,...

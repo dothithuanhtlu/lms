@@ -11,7 +11,6 @@ import java.util.Map;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,8 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import vn.doan.lms.domain.Assignment;
 import vn.doan.lms.domain.AssignmentDocument;
 import vn.doan.lms.domain.Course;
-import vn.doan.lms.domain.User;
-import vn.doan.lms.domain.dto.AssignmentCommentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentCreateDTO;
 import vn.doan.lms.domain.dto.AssignmentDTO;
 import vn.doan.lms.domain.dto.CreateAssignmentWithFilesRequest;
@@ -33,7 +30,6 @@ import vn.doan.lms.domain.dto.UpdateAssignmentWithFilesRequest;
 import vn.doan.lms.repository.AssignmentDocumentRepository;
 import vn.doan.lms.repository.AssignmentRepository;
 import vn.doan.lms.repository.CourseRepository;
-import vn.doan.lms.repository.UserRepository;
 import vn.doan.lms.service.interfaces.IAssignmentService;
 import vn.doan.lms.util.error.ResourceNotFoundException;
 
@@ -123,7 +119,7 @@ public class AssignmentService implements IAssignmentService {
     @Override
     @Transactional
     public void deleteAssignment(Long assignmentId) {
-        log.info("🗑️ Starting deletion process for assignment ID: {}", assignmentId);
+        log.info("Starting deletion process for assignment ID: {}", assignmentId);
 
         // 1. Find assignment with all related data
         Assignment assignment = assignmentRepository.findById(assignmentId)
@@ -157,7 +153,7 @@ public class AssignmentService implements IAssignmentService {
                     }
                 }
             } else {
-                log.info("📋 No submissions found for assignment {}", assignmentId);
+                log.info("No submissions found for assignment {}", assignmentId);
             }
 
             // 4. Delete assignment from database (cascade will handle documents and

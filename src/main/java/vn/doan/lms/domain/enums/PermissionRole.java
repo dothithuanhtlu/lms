@@ -87,6 +87,7 @@ public enum PermissionRole {
             Permission.VIEW_ACCOUNT,
             Permission.REFRESH_TOKEN,
             Permission.LOGOUT,
+            Permission.CHANGE_USER_PASSWORD,
             Permission.HEALTH_CHECK)),
 
     /**
@@ -97,6 +98,8 @@ public enum PermissionRole {
             Permission.VIEW_COURSE_FULL_DETAILS,
             Permission.VIEW_STUDENT_SCORES,
             Permission.UPDATE_STUDENT_SCORES,
+            Permission.VIEW_TEACHER_DETAILS,
+            Permission.UPDATE_USER,
 
             // Lesson Management - Full Access
             Permission.CREATE_LESSON,
@@ -141,6 +144,7 @@ public enum PermissionRole {
             Permission.VIEW_ACCOUNT,
             Permission.REFRESH_TOKEN,
             Permission.LOGOUT,
+            Permission.CHANGE_USER_PASSWORD,
             Permission.HEALTH_CHECK)),
 
     /**
@@ -149,6 +153,9 @@ public enum PermissionRole {
     STUDENT(Arrays.asList(// Course Access - Only enrolled courses
             Permission.VIEW_COURSES_BY_STUDENT,
             Permission.VIEW_STUDENT_COURSE_DETAILS,
+            Permission.VIEW_STUDENT_COURSE_DETAILS,
+            Permission.UPDATE_USER,
+            Permission.VIEW_STUDENT_DETAILS,
 
             // Lesson Access - Read Only
             Permission.VIEW_LESSON,
@@ -173,6 +180,7 @@ public enum PermissionRole {
             Permission.VIEW_ACCOUNT,
             Permission.REFRESH_TOKEN,
             Permission.LOGOUT,
+            Permission.CHANGE_USER_PASSWORD,
             Permission.HEALTH_CHECK));
 
     private final List<Permission> permissions;

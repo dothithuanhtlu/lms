@@ -4,15 +4,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
-import vn.doan.lms.domain.User;
 import vn.doan.lms.domain.dto.user_dto.AdminDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTO;
 import vn.doan.lms.domain.dto.user_dto.StudentDTOUpdate;
 import vn.doan.lms.domain.dto.user_dto.TeacherDTO;
-import vn.doan.lms.domain.dto.user_dto.UserDTO;
 import vn.doan.lms.domain.dto.user_dto.UserDTOCreate;
 import vn.doan.lms.domain.dto.user_dto.UserStatisticsDTO;
 import vn.doan.lms.domain.dto.user_dto.UserUpdateDTO;
+import vn.doan.lms.dto.request.auth.ChangePasswordRequest;
 import vn.doan.lms.service.implements_class.UserService;
 import vn.doan.lms.util.error.EmailValidationException;
 import vn.doan.lms.util.error.UserCodeValidationException;
@@ -115,4 +114,10 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(this.userService.saveUser(userDTOCreate));
     }
 
+    @PutMapping("/admin/user/{userCode}/change-password")
+    public ResponseEntity<String> changePassword(@PathVariable String userCode,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        String result = userService.changePasswordByAdmin(userCode, request.getOldPassword(), request.getNewPassword());
+        return ResponseEntity.ok(result);
+    }
 }

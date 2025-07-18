@@ -366,7 +366,110 @@ public class UserService {
             throw new ResourceNotFoundException("User code is not exists");
         }
         return convertToStudentDTO(this.userRepository.findOneByUserCode(userCode));
+    }
 
+    /**
+     * Thay đổi mật khẩu cho user hiện tại
+     * 
+     * @param oldPassword mật khẩu cũ
+     * @param newPassword mật khẩu mới
+     * @return thông báo thành công
+     */
+    @Transactional
+    public String changePassword(String oldPassword, String newPassword) {
+        // Lấy thông tin user hiện tại từ SecurityContext
+        String currentUserEmail = SecurityUtil.getCurrentUserLogin().orElse(null);
+        if (currentUserEmail == null) {
+            throw new BadRequestExceptionCustom("Không thể xác định user hiện tại");
+        }
+
+        // Tìm user theo email
+        User currentUser = this.userRepository.findByEmail(currentUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy user với email: " + currentUserEmail));
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(oldPassword, currentUser.getPassword())) {
+            throw new BadRequestExceptionCustom("Mật khẩu cũ không chính xác");
+        }
+
+        // Kiểm tra mật khẩu mới không trùng với mật khẩu cũ
+        if (passwordEncoder.matches(newPassword, currentUser.getPassword())) {
+            throw new BadRequestExceptionCustom("Mật khẩu mới không được trùng với mật khẩu cũ");
+        }
+
+        // Mã hóa mật khẩu mới
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+
+        // Cập nhật mật khẩu
+        currentUser.setPassword(encodedNewPassword);
+        currentUser.setUpdatedAt(Instant.now());
+        this.userRepository.save(currentUser);
+
+        return "Đã thay đổi mật khẩu thành công";
+    }
+
+    /**
+     * Thay đổi mật khẩu cho user khác (chỉ admin)
+     * 
+     * @param userCode    mã user cần đổi mật khẩu
+     * @param oldPassword mật khẩu cũ
+     * @param newPassword mật khẩu mới
+     * @return thông báo thành công
+     */
+    @Transactional
+    public String changePasswordByAdmin(String userCode, String oldPassword, String newPassword) {
+        // Kiểm tra user cần đổi mật khẩu có tồn tại không
+        if (!isExistUserCode(userCode)) {
+            throw new ResourceNotFoundException("User code không tồn tại: " + userCode);
+        }
+
+        // Tìm user theo userCode
+        User targetUser = this.userRepository.findOneByUserCode(userCode);
+
+        // Kiểm tra mật khẩu cũ
+        if (!passwordEncoder.matches(oldPassword, targetUser.getPassword())) {
+            throw new BadRequestExceptionCustom("Mật khẩu cũ không chính xác");
+        }
+
+        // Kiểm tra mật khẩu mới không trùng với mật khẩu cũ
+        if (passwordEncoder.matches(newPassword, targetUser.getPassword())) {
+            throw new BadRequestExceptionCustom("Mật khẩu mới không được trùng với mật khẩu cũ");
+        }
+
+        // Mã hóa mật khẩu mới
+        String encodedNewPassword = passwordEncoder.encode(newPassword);
+
+        // Cập nhật mật khẩu
+        targetUser.setPassword(encodedNewPassword);
+        targetUser.setUpdatedAt(Instant.now());
+        this.userRepository.save(targetUser);
+
+        return "Đã thay đổi mật khẩu thành công cho user: " + userCode;
+    }
+
+    /**
+     * Lấy thông tin chi tiết user theo userCode
+     * 
+     * @param userCode mã user
+     * @return thông tin chi tiết user
+     */
+    public AdminDTO getUserDetailsByUserCode(String userCode) {
+        if (!isExistUserCode(userCode)) {
+            throw new ResourceNotFoundException("User code không tồn tại: " + userCode);
+        }
+
+        User user = this.userRepository.findOneByUserCode(userCode);
+
+        return AdminDTO.builder()
+                .userCode(user.getUserCode())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .dateOfBirth(user.getDateOfBirth())
+                .gender(user.getGender())
+                .address(user.getAddress())
+                .phone(user.getPhone())
+                .roleName(user.getRole() != null ? user.getRole().getNameRole() : null)
+                .build();
     }
 
 }

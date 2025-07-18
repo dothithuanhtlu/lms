@@ -19,7 +19,6 @@ public enum Permission {
                         "Xem thống kê người dùng"),
         UPDATE_USER("UPDATE_USER", HttpMethod.PUT, "/admin/user/{userCode}", "Cập nhật thông tin người dùng"),
         DELETE_USER("DELETE_USER", HttpMethod.DELETE, "/admin/user/{userCode}", "Xóa người dùng"),
-
         // User details by role
         VIEW_STUDENT_DETAILS("VIEW_STUDENT_DETAILS", HttpMethod.GET, "/admin/student/{userCode}",
                         "Xem chi tiết sinh viên"),
@@ -148,6 +147,8 @@ public enum Permission {
         VIEW_ACCOUNT("VIEW_ACCOUNT", HttpMethod.GET, "/auth/account", "Xem thông tin tài khoản"),
         REFRESH_TOKEN("REFRESH_TOKEN", HttpMethod.GET, "/auth/refresh", "Làm mới token"),
         LOGOUT("LOGOUT", HttpMethod.POST, "/logout", "Đăng xuất"),
+        CHANGE_USER_PASSWORD("ADMIN_CHANGE_USER_PASSWORD", HttpMethod.PUT, "/admin/user/{userCode}/change-password",
+                        "Admin thay đổi mật khẩu user"),
 
         // ================================
         // HEALTH CHECK PERMISSIONS

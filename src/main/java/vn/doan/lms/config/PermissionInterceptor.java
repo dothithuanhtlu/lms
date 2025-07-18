@@ -43,7 +43,7 @@ public class PermissionInterceptor implements HandlerInterceptor {
     private final ObjectMapper objectMapper;
 
     // Dùng để so khớp các pattern đường dẫn có biến động (ví dụ
-    // /students/{studentCode})
+    // /users/{userCode})
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     private static final Logger logger = LoggerFactory.getLogger(PermissionInterceptor.class);
@@ -65,13 +65,13 @@ public class PermissionInterceptor implements HandlerInterceptor {
         String requestURI = request.getRequestURI();
         String httpMethod = request.getMethod();
 
-        // Lấy thông tin username (studentCode) của người dùng hiện tại từ
+        // Lấy thông tin username (userCode) của người dùng hiện tại từ
         // SecurityContext
         String userCode = SecurityUtil.getCurrentUserLogin().orElse(PermissionInterceptor.EMPTY_STRING);
 
         logger.debug("Processing request: URI={}, Method={}", requestURI, httpMethod);
 
-        // Nếu chưa đăng nhập (không lấy được studentCode)
+        // Nếu chưa đăng nhập (không lấy được userCode)
         if (userCode.isEmpty()) {
             logger.warn("No user authenticated");
             sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED,
@@ -79,10 +79,10 @@ public class PermissionInterceptor implements HandlerInterceptor {
             return false; // chặn request tiếp tục
         }
 
-        // Lấy thông tin Student từ database theo studentCode
+        // Lấy thông tin user từ database theo userCode
         User user = this.userService.getUserByUserCode(userCode);
         if (user == null) {
-            logger.warn("Student not found: {}", userCode);
+            logger.warn("user not found: {}", userCode);
             sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN,
                     "Forbidden", "Không tìm thấy thông tin người dùng");
             return false; // chặn request tiếp tục
@@ -144,18 +144,18 @@ public class PermissionInterceptor implements HandlerInterceptor {
     }
 
     /**
-     * Phương thức lấy biến động studentCode từ URI dựa trên pattern endpoint.
-     * Ví dụ pattern: /students/{studentCode}
-     * URI thực tế: /students/12345
+     * Phương thức lấy biến động userCode từ URI dựa trên pattern endpoint.
+     * Ví dụ pattern: /users/{userCode}
+     * URI thực tế: /users/12345
      * => Trả về "12345"
      * 
      * @param requestURI URI thực tế của request.
      * @param pattern    pattern endpoint định nghĩa biến.
-     * @return giá trị studentCode nếu tìm được, null nếu không tìm được.
+     * @return giá trị userCode nếu tìm được, null nếu không tìm được.
      */
-    // private String extractStudentCode(String requestURI, String pattern) {
+    // private String extractuserCode(String requestURI, String pattern) {
     // Map<String, String> variables =
     // pathMatcher.extractUriTemplateVariables(pattern, requestURI);
-    // return variables.get("studentCode");
+    // return variables.get("userCode");
     // }
 }

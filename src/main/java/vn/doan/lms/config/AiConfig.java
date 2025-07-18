@@ -9,7 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
 /**
- * Lớp cấu hình cho LangChain4j AI Assistant.
+ * Lớp cấu hình cho LangChain4j AI Assistant. Cấu hình bộ nhớ hội thoại (memory)
  * 
  * Cung cấp bộ nhớ hội thoại (memory) với giới hạn token lớn để lưu toàn bộ lịch
  * sử hội thoại.
