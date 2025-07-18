@@ -51,10 +51,7 @@ public class QuizAttempt {
 
     private LocalDateTime endTime;
 
-    @Builder.Default
-    private Boolean isCompleted = false;
-
-    @OneToMany(mappedBy = "attempt", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "attempt", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     private List<StudentAnswer> studentAnswers = new ArrayList<>();
 }

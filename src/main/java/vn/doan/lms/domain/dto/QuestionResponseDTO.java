@@ -51,6 +51,7 @@ public class QuestionResponseDTO {
                     answerDTO.setContent(answer.getContent());
                     return answerDTO;
                 }).toList();
+        dto.setAnswerStudents(answerDTOs);
         return dto;
     }
 }

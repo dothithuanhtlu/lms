@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import vn.doan.lms.domain.User;
 
 @Data
 @Builder
@@ -15,4 +16,16 @@ public class UserDTO {
     private String email;
     private String fullName;
     private RoleDTO role;
+
+    public static UserDTO mapToDTO(User user) {
+        if (user == null) {
+            return null;
+        }
+        return UserDTO.builder()
+                .id(user.getId())
+                .userCode(user.getUserCode())
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .build();
+    }
 }

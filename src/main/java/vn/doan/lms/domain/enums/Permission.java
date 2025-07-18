@@ -168,7 +168,14 @@ public enum Permission {
         TEACHER_VIEW_QUESTION("TEACHER_VIEW_QUESTION", HttpMethod.GET, "/api/question/teacher/quiz/*",
                         "Giáo viên xem câu hỏi của bài kiểm tra"),
         TEACHER_GET_QUIZ("TEACHER_GET_QUIZ", HttpMethod.GET, "/api/quiz/teacher/course/*", "Giáo viên lấy bài kiểm tra"),
-        STUDENT_GET_QUIZ("STUDENT_GET_QUIZ", HttpMethod.GET, "/api/quiz/student/course/*", "Sinh viên lấy bài kiểm tra");
+        STUDENT_GET_QUIZ("STUDENT_GET_QUIZ", HttpMethod.GET, "/api/quiz/student/course/*", "Sinh viên lấy bài kiểm tra"),
+        SUBMIT_QUIZ("SUBMIT_QUIZ", HttpMethod.POST, "/api/quiz-attempts/submit", "Nộp bài kiểm tra"),
+        TEACHER_GET_QUIZ_ATTEMPT("TEACHER_GET_QUIZ_ATTEMPT", HttpMethod.GET, "/api/quiz-attempts/teacher/*",
+                        "Giáo viên lấy kết quả bài kiểm tra"),
+        STUDENT_GET_QUIZ_ATTEMPT("STUDENT_GET_QUIZ_ATTEMPT", HttpMethod.GET, "/api/quiz-attempts/student/*",
+                        "Sinh viên lấy kết quả bài kiểm tra"),
+        VIEW_DETAIL_QUIZ_ATTEMPT("VIEW_DETAIL_QUIZ_ATTEMPT", HttpMethod.GET, "/api/quiz-attempts/detail/*",
+                        "Xem chi tiết kết quả bài kiểm tra");
 
 
         private final String name;

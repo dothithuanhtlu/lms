@@ -150,7 +150,11 @@ public enum PermissionRole {
             Permission.CREATE_QUESTION,
             Permission.UPDATE_QUESTION,
             Permission.TEACHER_VIEW_QUESTION,
-            Permission.TEACHER_GET_QUIZ
+            Permission.TEACHER_GET_QUIZ,
+            // Quiz Attempt Management
+            Permission.TEACHER_GET_QUIZ_ATTEMPT,
+            Permission.SUBMIT_QUIZ,
+            Permission.VIEW_DETAIL_QUIZ_ATTEMPT
             )),
 
     /**
@@ -187,6 +191,10 @@ public enum PermissionRole {
             // Quiz Management - Limited Access
             Permission.STUDENT_VIEW_QUESTION,
             Permission.STUDENT_GET_QUIZ,
+            // Quiz Attempt Management
+            Permission.SUBMIT_QUIZ,
+            Permission.VIEW_DETAIL_QUIZ_ATTEMPT,
+            Permission.STUDENT_GET_QUIZ_ATTEMPT,
             Permission.HEALTH_CHECK));
 
     private final List<Permission> permissions;
