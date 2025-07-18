@@ -152,7 +152,24 @@ public enum Permission {
         // ================================
         // HEALTH CHECK PERMISSIONS
         // ================================
-        HEALTH_CHECK("HEALTH_CHECK", HttpMethod.GET, "/health", "Kiểm tra sức khỏe hệ thống");
+        HEALTH_CHECK("HEALTH_CHECK", HttpMethod.GET, "/health", "Kiểm tra sức khỏe hệ thống"),
+
+        // ================================
+        // QUIZ MANAGEMENT PERMISSIONS
+        // ================================
+        CREATE_QUIZ("CREATE_QUIZ", HttpMethod.POST, "/api/quiz/create", "Tạo bài kiểm tra mới"),
+        UPDATE_QUIZ("UPDATE_QUIZ", HttpMethod.PUT, "/api/quiz/update/*", "Cập nhật bài kiểm tra "),
+        DELETE_QUIZ("DELETE_QUIZ", HttpMethod.DELETE, "/api/quiz/delete/*", "Xóa bài kiểm tra"),
+        CREATE_QUESTION("CREATE_QUESTION", HttpMethod.POST, "/api/question/create/*",
+                        "Tạo câu hỏi cho bài kiểm tra"),
+        UPDATE_QUESTION("UPDATE_QUESTION", HttpMethod.PUT, "/api/question/update/*",
+                        "Cập nhật câu hỏi của bài kiểm tra"),
+        STUDENT_VIEW_QUESTION("VIEW_QUESTION", HttpMethod.GET, "/api/question/student/quiz/*", "Xem câu hỏi của bài kiểm tra"),
+        TEACHER_VIEW_QUESTION("TEACHER_VIEW_QUESTION", HttpMethod.GET, "/api/question/teacher/quiz/*",
+                        "Giáo viên xem câu hỏi của bài kiểm tra"),
+        TEACHER_GET_QUIZ("TEACHER_GET_QUIZ", HttpMethod.GET, "/api/quiz/teacher/course/*", "Giáo viên lấy bài kiểm tra"),
+        STUDENT_GET_QUIZ("STUDENT_GET_QUIZ", HttpMethod.GET, "/api/quiz/student/course/*", "Sinh viên lấy bài kiểm tra");
+
 
         private final String name;
         private final HttpMethod httpMethod;

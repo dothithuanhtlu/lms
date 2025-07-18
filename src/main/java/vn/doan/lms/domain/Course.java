@@ -66,6 +66,10 @@ public class Course {
     @Builder.Default
     private List<Assignment> assignments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "course", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Quiz> quizzes = new ArrayList<>();
+
     @NotNull(message = "StartDate mustn't be empty")
     @Column(name = "start_date")
     private LocalDate startDate;

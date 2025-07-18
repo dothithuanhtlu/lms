@@ -240,72 +240,72 @@ public class CloudinaryService {
         }
     }
 
-    // // ✨ Delete single file by public ID - IMPROVED
-    // @SuppressWarnings("rawtypes")
-    // public boolean deleteFile(String publicId, String resourceType) {
-    // try {
-    // log.info("Deleting file: {} (type: {})", publicId, resourceType);
+     // ✨ Delete single file by public ID - IMPROVED
+     @SuppressWarnings("rawtypes")
+     public boolean deleteFile(String publicId, String resourceType) {
+     try {
+     log.info("Deleting file: {} (type: {})", publicId, resourceType);
 
-    // Map<String, Object> options = new HashMap<>();
-    // options.put("type", "upload");
-    // options.put("resource_type", resourceType != null ? resourceType : "raw");
+     Map<String, Object> options = new HashMap<>();
+     options.put("type", "upload");
+     options.put("resource_type", resourceType != null ? resourceType : "raw");
 
-    // Map result = cloudinary.api().deleteResources(Arrays.asList(publicId),
-    // options);
+     Map result = cloudinary.api().deleteResources(Arrays.asList(publicId),
+     options);
 
-    // // Check deletion result
-    // Map deleted = (Map) result.get("deleted");
-    // if (deleted != null && deleted.containsKey(publicId)) {
-    // String status = (String) deleted.get(publicId);
-    // if ("deleted".equals(status)) {
-    // log.info("File successfully deleted: {}", publicId);
-    // return true;
-    // } else {
-    // log.warn("File deletion status: {} for {}", status, publicId);
-    // return false;
-    // }
-    // } else {
-    // log.warn("No deletion status returned for: {}", publicId);
-    // return false;
-    // }
+     // Check deletion result
+     Map deleted = (Map) result.get("deleted");
+     if (deleted != null && deleted.containsKey(publicId)) {
+     String status = (String) deleted.get(publicId);
+     if ("deleted".equals(status)) {
+     log.info("File successfully deleted: {}", publicId);
+     return true;
+     } else {
+     log.warn("File deletion status: {} for {}", status, publicId);
+     return false;
+     }
+     } else {
+     log.warn("No deletion status returned for: {}", publicId);
+     return false;
+     }
 
-    // } catch (Exception e) {
-    // log.error("Failed to delete file: {} - Error: {}", publicId, e.getMessage());
-    // return false;
-    // }
-    // }
+     } catch (Exception e) {
+     log.error("Failed to delete file: {} - Error: {}", publicId, e.getMessage());
+     return false;
+     }
+     }
 
-    // // ✨ ALTERNATIVE: Delete all resources in folder by prefix (Simpler approach)
-    // @SuppressWarnings("rawtypes")
-    // public boolean deleteFolderByPrefix(String folderPath) {
-    // try {
-    // log.info("Deleting all resources with prefix: {}", folderPath);
+     // ✨ ALTERNATIVE: Delete all resources in folder by prefix (Simpler approach)
+     @SuppressWarnings("rawtypes")
+     public boolean deleteFolderByPrefix(String folderPath) {
+     try {
+     log.info("Deleting all resources with prefix: {}", folderPath);
 
-    // // Delete by prefix for each resource type
-    // String[] resourceTypes = { "raw", "image", "video" };
+     // Delete by prefix for each resource type
+     String[] resourceTypes = { "raw", "image", "video" };
 
-    // for (String resourceType : resourceTypes) {
-    // try {
-    // Map<String, Object> deleteOptions = new HashMap<>();
-    // deleteOptions.put("type", "upload");
-    // deleteOptions.put("resource_type", resourceType);
+     for (String resourceType : resourceTypes) {
+     try {
+     Map<String, Object> deleteOptions = new HashMap<>();
+     deleteOptions.put("type", "upload");
+     deleteOptions.put("resource_type", resourceType);
 
-    // // Use prefix to delete all resources starting with folderPath
-    // cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
-    // log.info("Deleted {} resources with prefix: {}", resourceType, folderPath);
+     // Use prefix to delete all resources starting with folderPath
+     cloudinary.api().deleteResourcesByPrefix(folderPath + "/", deleteOptions);
+     log.info("Deleted {} resources with prefix: {}", resourceType, folderPath);
 
-    // } catch (Exception e) {
-    // log.warn("No {} resources found with prefix: {} - {}", resourceType,
-    // folderPath, e.getMessage());
-    // }
-    // }
+     } catch (Exception e) {
+     log.warn("No {} resources found with prefix: {} - {}", resourceType,
+     folderPath, e.getMessage());
+     }
+     }
 
-    // return true;
+     return true;
 
-    // } catch (Exception e) {
-    // log.error("Failed to delete resources by prefix: {} - {}", folderPath,
-    // e.getMessage());
-    // return false;
-    // }
-    // }
+     } catch (Exception e) {
+     log.error("Failed to delete resources by prefix: {} - {}", folderPath,
+     e.getMessage());
+     return false;
+     }
+     }
 }

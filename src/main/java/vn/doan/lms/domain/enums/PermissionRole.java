@@ -141,7 +141,17 @@ public enum PermissionRole {
             Permission.VIEW_ACCOUNT,
             Permission.REFRESH_TOKEN,
             Permission.LOGOUT,
-            Permission.HEALTH_CHECK)),
+            Permission.HEALTH_CHECK,
+
+            // Quiz Management - Full Access
+            Permission.CREATE_QUIZ,
+            Permission.UPDATE_QUIZ,
+            Permission.DELETE_QUIZ,
+            Permission.CREATE_QUESTION,
+            Permission.UPDATE_QUESTION,
+            Permission.TEACHER_VIEW_QUESTION,
+            Permission.TEACHER_GET_QUIZ
+            )),
 
     /**
      * STUDENT - Quyền sinh viên, chỉ có thể xem và nộp bài
@@ -173,6 +183,10 @@ public enum PermissionRole {
             Permission.VIEW_ACCOUNT,
             Permission.REFRESH_TOKEN,
             Permission.LOGOUT,
+
+            // Quiz Management - Limited Access
+            Permission.STUDENT_VIEW_QUESTION,
+            Permission.STUDENT_GET_QUIZ,
             Permission.HEALTH_CHECK));
 
     private final List<Permission> permissions;
