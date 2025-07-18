@@ -13,9 +13,6 @@ public class AnswerRequestDTO {
     @NotBlank(message = "Answer content mustn't be empty")
     private String content;
 
-    @NotNull(message = "Question mustn't be null")
-    private Question question;
-
     private Boolean isCorrect;
 
 }
